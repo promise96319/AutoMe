@@ -1,0 +1,3228 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>create-skill · 流程审阅</title>
+    <script>
+      const colorMode = matchMedia('(prefers-color-scheme: dark)');
+      function readTheme() {
+        try {
+          return localStorage.getItem('create-skill-g6-theme');
+        } catch {
+          return null;
+        }
+      }
+      const storedTheme = readTheme();
+      let theme = ['light', 'dark', 'system'].includes(storedTheme) ? storedTheme : 'system';
+      function applyTheme() {
+        document.documentElement.dataset.theme =
+          theme === 'system' ? (colorMode.matches ? 'dark' : 'light') : theme;
+      }
+      applyTheme();
+    </script>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f8fb;
+        --surface: #fff;
+        --ink: #1d212a;
+        --text: #404651;
+        --muted: #626977;
+        --line: #dee1e8;
+        --soft: #f2f3f6;
+        --brand: #365cc9;
+        --accent: #eaf0ff;
+        --grid: #d5dbe6;
+        --shadow: 0 2px 8px #1e294014;
+        --radius: 8px;
+        font:
+          14px/1.55 'Geist',
+          'PingFang SC',
+          'Microsoft YaHei',
+          sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+      }
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+        --bg: #15171c;
+        --surface: #1d1f25;
+        --ink: #eef0f5;
+        --text: #cbd0da;
+        --muted: #a5adbb;
+        --line: #363a44;
+        --soft: #292c33;
+        --brand: #9cb6ff;
+        --accent: #293655;
+        --grid: #313742;
+        --shadow: 0 2px 10px #0004;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      button,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+      button,
+      select,
+      summary {
+        cursor: pointer;
+      }
+      button {
+        background: none;
+        border: 0;
+      }
+      button:focus-visible,
+      select:focus-visible,
+      input:focus-visible,
+      summary:focus-visible,
+      [tabindex]:focus-visible {
+        outline: 2px solid var(--brand);
+        outline-offset: 3px;
+      }
+      button:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+      button:not(:disabled):hover,
+      .idx button:hover,
+      summary:hover {
+        background: var(--soft);
+      }
+      [hidden] {
+        display: none !important;
+      }
+      .icon {
+        width: 17px;
+        height: 17px;
+        display: inline-block;
+        flex: none;
+        vertical-align: -3px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      #app {
+        height: 100vh;
+        height: 100dvh;
+        min-height: 530px;
+        display: flex;
+        flex-direction: column;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 0 26px;
+        height: 59px;
+        flex: none;
+        background: var(--surface);
+        border-bottom: 1px solid var(--line);
+      }
+      .brand,
+      .brand > span,
+      .header-actions,
+      .btn,
+      .tabs,
+      .tools,
+      .tool-group,
+      .switch,
+      .panel-head,
+      .zoom,
+      .walknav,
+      .badge,
+      .index-label,
+      .section-title,
+      .legend-trigger,
+      .case-name {
+        display: flex;
+        align-items: center;
+      }
+      .brand {
+        gap: 10px;
+        font-weight: 650;
+        white-space: nowrap;
+      }
+      .mark {
+        width: 29px;
+        height: 29px;
+        border-radius: 8px;
+        color: white;
+        background: #3459c6;
+        display: grid !important;
+        place-items: center;
+      }
+      .mark .icon {
+        width: 19px;
+        height: 19px;
+      }
+      .crumb {
+        border-left: 1px solid var(--line);
+        padding-left: 13px;
+        margin-left: 4px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .header-actions {
+        gap: 14px;
+      }
+      .tabs {
+        gap: 2px;
+        background: var(--soft);
+        padding: 3px;
+        border: 1px solid var(--line);
+        border-radius: 9px;
+      }
+      .tabs button {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .tabs button[aria-selected='true'] {
+        background: var(--surface);
+        color: var(--ink);
+        box-shadow: 0 1px 4px #13162619;
+      }
+      .select-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .select-wrap > .icon:last-child {
+        position: absolute;
+        right: 9px;
+        width: 13px;
+        pointer-events: none;
+      }
+      .select-wrap select {
+        appearance: none;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 6px 27px 6px 10px;
+        font-size: 12px;
+      }
+      .theme > .icon:first-child {
+        position: absolute;
+        left: 9px;
+        width: 15px;
+        pointer-events: none;
+      }
+      .theme select {
+        padding-left: 31px;
+      }
+      .intro {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 20px 28px 18px;
+        background: var(--surface);
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+      h1 {
+        font-size: clamp(25px, 2.1vw, 34px);
+        font-weight: 660;
+        letter-spacing: -1.2px;
+        line-height: 1.2;
+      }
+      .intro p {
+        color: var(--muted);
+        margin-top: 5px;
+        font-size: 13px;
+      }
+      .metrics {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .metrics span + span {
+        border-left: 1px solid var(--line);
+        padding-left: 16px;
+      }
+      .metrics b {
+        color: var(--ink);
+        font:
+          600 15px ui-monospace,
+          monospace;
+        margin-right: 4px;
+      }
+      #work {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) clamp(278px, 24vw, 355px);
+        border-top: 1px solid var(--line);
+      }
+      .workspace {
+        position: relative;
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .tools {
+        padding: 9px 16px;
+        justify-content: space-between;
+        gap: 9px;
+        flex-wrap: wrap;
+        background: var(--surface);
+        border-bottom: 1px solid var(--line);
+        z-index: 2;
+      }
+      .tool-group {
+        gap: 6px;
+      }
+      .btn {
+        justify-content: center;
+        gap: 6px;
+        color: var(--text);
+        padding: 5px 9px;
+        font-size: 12px;
+        min-height: 30px;
+        white-space: nowrap;
+        border-radius: 6px;
+      }
+      .btn.outline {
+        border: 1px solid var(--line);
+        background: var(--surface);
+      }
+      .btn .icon {
+        width: 15px;
+        height: 15px;
+      }
+      .sep {
+        height: 17px;
+        border-left: 1px solid var(--line);
+        margin: 0 4px;
+      }
+      .switch {
+        gap: 7px;
+        font-size: 12px;
+        border-radius: 6px;
+        padding: 6px;
+        color: var(--text);
+        white-space: nowrap;
+      }
+      .toggle {
+        width: 25px;
+        height: 15px;
+        background: var(--muted);
+        border-radius: 16px;
+        position: relative;
+        opacity: 0.64;
+      }
+      .toggle:after {
+        content: '';
+        display: block;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #fff;
+        position: absolute;
+        top: 2px;
+        left: 2px;
+      }
+      .switch[aria-checked='true'] .toggle {
+        background: #365cc9;
+        opacity: 1;
+      }
+      .switch[aria-checked='true'] .toggle:after {
+        left: 12px;
+      }
+      .walk-select {
+        position: relative;
+      }
+      .walk-select > .icon:first-child {
+        position: absolute;
+        left: 9px;
+        color: var(--brand);
+        width: 15px;
+        pointer-events: none;
+      }
+      .walk-select select {
+        padding-left: 31px;
+      }
+      #stage {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        isolation: isolate;
+        background-color: var(--bg);
+        background-image: radial-gradient(var(--grid) 0.8px, transparent 1px);
+        background-size: 16px 16px;
+        overflow: hidden;
+      }
+      #surface,
+      #canvas,
+      #fallback {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      #surface {
+        touch-action: none;
+        cursor: grab;
+        outline-offset: -3px;
+      }
+      #surface.drag {
+        cursor: grabbing;
+      }
+      #canvas,
+      #fallback {
+        pointer-events: none;
+      }
+      #canvas canvas {
+        display: block;
+      }
+      .float {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        box-shadow: var(--shadow);
+      }
+      .zoom {
+        position: absolute;
+        left: 15px;
+        bottom: 15px;
+        gap: 1px;
+        padding: 3px;
+      }
+      .square {
+        width: 29px;
+        height: 29px;
+        display: inline-grid;
+        place-items: center;
+        padding: 0;
+        border-radius: 5px;
+        color: var(--text);
+      }
+      .square .icon {
+        width: 15px;
+        height: 15px;
+      }
+      #percent {
+        font:
+          11px ui-monospace,
+          monospace;
+        color: var(--muted);
+        min-width: 41px;
+        text-align: center;
+      }
+      .mapbox {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        width: 128px;
+        overflow: hidden;
+      }
+      .mapbox summary,
+      .legend summary {
+        list-style: none;
+      }
+      .mapbox summary::-webkit-details-marker,
+      .legend summary::-webkit-details-marker {
+        display: none;
+      }
+      .mapbox summary {
+        padding: 5px 8px;
+        font-size: 11px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .mapbox summary .icon {
+        width: 13px;
+        height: 13px;
+      }
+      .mapbox svg#mini {
+        width: 100%;
+        height: 75px;
+        display: block;
+        border-top: 1px solid var(--line);
+        touch-action: none;
+        cursor: crosshair;
+        background: var(--bg);
+      }
+      .mapbox:not([open]) {
+        width: auto;
+      }
+      .legend {
+        position: absolute;
+        top: 12px;
+        left: 14px;
+        max-width: calc(100% - 28px);
+      }
+      .legend summary {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        padding: 6px 10px;
+        color: var(--text);
+        border-radius: 8px;
+      }
+      .legend summary .icon {
+        width: 14px;
+        height: 14px;
+      }
+      .legend-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 9px 15px;
+        padding: 10px 13px 14px;
+        border-top: 1px solid var(--line);
+        font-size: 12px;
+      }
+      .legend-grid span {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .sample {
+        display: inline-block;
+        flex: none;
+        width: 20px;
+        height: 13px;
+        border: 1.5px solid var(--c);
+        background: var(--f);
+        border-radius: 4px;
+      }
+      .sample.diamond {
+        width: 12px;
+        height: 12px;
+        transform: rotate(45deg);
+        margin: 0 4px;
+        border-radius: 2px;
+      }
+      .sample.dot {
+        width: 10px;
+        height: 10px;
+        margin: 0 5px;
+        border-radius: 50%;
+      }
+      .sample.pill {
+        border-radius: 10px;
+      }
+      .sample.wire {
+        height: 0;
+        border: 0;
+        border-top: 2px dashed var(--c);
+        border-radius: 0;
+      }
+      .sample.solid {
+        border-top-style: solid;
+      }
+      .status {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 4px 15px;
+        border-top: 1px solid var(--line);
+        background: var(--surface);
+        font-size: 11px;
+        color: var(--muted);
+      }
+      .status > span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .status .icon {
+        width: 12px;
+        height: 12px;
+      }
+      aside {
+        border-left: 1px solid var(--line);
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        background: var(--surface);
+        overflow: hidden;
+      }
+      .panel-head {
+        height: 48px;
+        min-height: 48px;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+        padding: 0 17px;
+      }
+      .panel-head > span {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-weight: 620;
+        font-size: 13px;
+      }
+      .panel-head .icon {
+        width: 15px;
+      }
+      #detail {
+        overflow: auto;
+        flex: 1;
+        padding: 20px;
+        overscroll-behavior: contain;
+      }
+      .badge {
+        width: max-content;
+        max-width: 100%;
+        font-size: 11px;
+        color: var(--brand);
+        background: var(--accent);
+        gap: 5px;
+        padding: 2px 7px;
+        border-radius: 5px;
+        font-weight: 600;
+      }
+      .badge .icon {
+        width: 13px;
+        height: 13px;
+      }
+      h2 {
+        font-size: 21px;
+        line-height: 1.4;
+        letter-spacing: -0.5px;
+        margin: 10px 0 8px;
+      }
+      h3 {
+        font-size: 12px;
+        font-weight: 650;
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+      .detail-section {
+        border-top: 1px solid var(--line);
+        padding-top: 14px;
+        margin-top: 15px;
+      }
+      .detail-section p,
+      .para {
+        font-size: 13px;
+        color: var(--text);
+        line-height: 1.8;
+        overflow-wrap: anywhere;
+      }
+      .raw {
+        white-space: pre-wrap;
+      }
+      .idx {
+        display: grid;
+        gap: 2px;
+      }
+      .idx button,
+      .navline {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        text-align: left;
+        padding: 7px 5px;
+        border-radius: 5px;
+        font-size: 13px;
+        color: var(--text);
+      }
+      .idx .nested {
+        padding-left: 19px;
+      }
+      .index-label {
+        justify-content: center;
+        min-width: 29px;
+        height: 21px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font:
+          11px/1 ui-monospace,
+          monospace;
+        color: var(--brand);
+      }
+      .navline .icon {
+        width: 14px;
+        height: 14px;
+        color: var(--brand);
+      }
+      .idx .icon:last-child {
+        width: 12px;
+        margin-left: auto;
+        color: var(--muted);
+      }
+      .notes {
+        padding-left: 17px;
+        margin: 0;
+        color: var(--text);
+        font-size: 13px;
+        line-height: 1.75;
+      }
+      .notes li + li {
+        margin-top: 7px;
+      }
+      .notes small {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .checklist {
+        display: grid;
+        gap: 9px;
+        margin-top: 9px;
+      }
+      .checklist label {
+        cursor: pointer;
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        color: var(--text);
+        font-size: 13px;
+      }
+      .checklist input {
+        accent-color: var(--brand);
+        margin: 4px 0 0;
+      }
+      .checklist label:has(:checked) span {
+        color: var(--muted);
+      }
+      .detail-section .muted,
+      .muted {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      code {
+        font:
+          0.9em ui-monospace,
+          monospace;
+        background: var(--soft);
+        padding: 1px 4px;
+        border-radius: 3px;
+      }
+      .detail-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 12px 0 0;
+      }
+      #walk {
+        padding: 13px 18px;
+        background: var(--accent);
+        border-bottom: 1px solid var(--line);
+        max-height: 35%;
+        overflow: auto;
+      }
+      .case-name {
+        font-size: 12px;
+        color: var(--brand);
+        font-weight: 650;
+        gap: 6px;
+      }
+      .case-name .icon {
+        width: 14px;
+        height: 14px;
+      }
+      .walknav {
+        justify-content: space-between;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .walknav span {
+        color: var(--muted);
+        font:
+          11px ui-monospace,
+          monospace;
+      }
+      #case-note {
+        font-size: 13px;
+        margin-top: 6px;
+      }
+      #case-request {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 3px;
+      }
+      #textview {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        padding: 24px clamp(15px, 6vw, 90px);
+        border-top: 1px solid var(--line);
+      }
+      #textview article {
+        max-width: 980px;
+        margin: auto;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      #textview h2 {
+        font:
+          600 14px ui-monospace,
+          monospace;
+        background: var(--soft);
+        margin: 0;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--line);
+      }
+      pre {
+        margin: 0;
+        padding: 23px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font:
+          13px/1.85 'SFMono-Regular',
+          Consolas,
+          'PingFang SC',
+          monospace;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        clip-path: inset(50%);
+        overflow: hidden;
+      }
+      @media (max-width: 920px) {
+        .metrics {
+          display: none;
+        }
+        .tools {
+          padding: 6px;
+          gap: 4px;
+        }
+        .tool-group {
+          gap: 2px;
+        }
+        .btn {
+          padding: 4px 5px;
+        }
+        .intro {
+          padding: 13px 17px;
+        }
+        .mapbox {
+          width: 98px;
+        }
+        .mapbox svg#mini {
+          height: 55px;
+        }
+        #detail {
+          padding: 14px;
+        }
+        .crumb {
+          display: none;
+        }
+      }
+      @media (max-width: 720px) {
+        #app {
+          height: auto;
+          min-height: 100dvh;
+        }
+        header {
+          height: auto;
+          min-height: 52px;
+          padding: 7px 10px;
+          gap: 4px;
+          flex-wrap: wrap;
+        }
+        .brand {
+          gap: 6px;
+          font-size: 12px;
+        }
+        .header-actions {
+          gap: 4px;
+        }
+        .theme select {
+          width: 35px;
+          color: transparent;
+          padding: 5px;
+        }
+        .theme > .icon:last-child {
+          display: none;
+        }
+        .tabs button {
+          padding: 4px 7px;
+        }
+        .intro p {
+          font-size: 12px;
+        }
+        .intro {
+          padding: 12px;
+        }
+        #work {
+          display: flex;
+          flex-direction: column;
+        }
+        .workspace {
+          height: 66dvh;
+          min-height: 390px;
+          flex: none;
+        }
+        .tools {
+          padding: 5px;
+        }
+        .status {
+          font-size: 10px;
+          padding: 3px 8px;
+        }
+        .zoom {
+          left: 7px;
+          bottom: 8px;
+        }
+        .mapbox {
+          right: 7px;
+          bottom: 8px;
+        }
+        aside {
+          border-left: 0;
+          border-top: 1px solid var(--line);
+        }
+        #detail {
+          overflow: visible;
+        }
+        #walk {
+          max-height: none;
+        }
+        .panel-head {
+          height: 39px;
+          min-height: 39px;
+        }
+        #textview {
+          overflow: visible;
+          padding: 12px;
+        }
+        pre {
+          padding: 13px;
+        }
+        .sep {
+          margin: 0 2px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Lucide icons — ISC License
+
+Copyright (c) 2026 Lucide Icons and Contributors
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+---
+
+The following Lucide icons are derived from the Feather project:
+
+airplay, alert-circle, alert-octagon, alert-triangle, aperture, arrow-down-circle, arrow-down-left, arrow-down-right, arrow-down, arrow-left-circle, arrow-left, arrow-right-circle, arrow-right, arrow-up-circle, arrow-up-left, arrow-up-right, arrow-up, at-sign, calendar, cast, check, chevron-down, chevron-left, chevron-right, chevron-up, chevrons-down, chevrons-left, chevrons-right, chevrons-up, circle, clipboard, clock, code, columns, command, compass, corner-down-left, corner-down-right, corner-left-down, corner-left-up, corner-right-down, corner-right-up, corner-up-left, corner-up-right, crosshair, database, divide-circle, divide-square, dollar-sign, download, external-link, feather, frown, hash, headphones, help-circle, info, italic, key, layout, life-buoy, link-2, link, loader, lock, log-in, log-out, maximize, meh, minimize, minimize-2, minus-circle, minus-square, minus, monitor, moon, more-horizontal, more-vertical, move, music, navigation-2, navigation, octagon, pause-circle, percent, plus-circle, plus-square, plus, power, radio, rss, search, server, share, shopping-bag, sidebar, smartphone, smile, square, table-2, tablet, target, terminal, trash-2, trash, triangle, tv, type, upload, x-circle, x-octagon, x-square, x, zoom-in, zoom-out
+
+The MIT License (MIT) (for the icons listed above)
+
+Copyright (c) 2013-present Cole Bemis
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ -->
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" aria-hidden="true" style="position:absolute"><defs><symbol id="i-Workflow" viewBox="0 0 24 24"><rect width="8" height="8" x="3" y="3" rx="2"/><path d="M7 11v4a2 2 0 0 0 2 2h4"/><rect width="8" height="8" x="13" y="13" rx="2"/></symbol>
+<symbol id="i-GitMerge" viewBox="0 0 24 24"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M6 21V9a9 9 0 0 0 9 9"/></symbol>
+<symbol id="i-GitFork" viewBox="0 0 24 24"><circle cx="12" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9"/><path d="M12 12v3"/></symbol>
+<symbol id="i-FileText" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+<symbol id="i-Monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></symbol>
+<symbol id="i-ChevronDown" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="i-Route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/></symbol>
+<symbol id="i-FoldVertical" viewBox="0 0 24 24"><path d="M12 22v-6"/><path d="M12 8V2"/><path d="M4 12H2"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/><path d="m15 19-3-3-3 3"/><path d="m15 5-3 3-3-3"/></symbol>
+<symbol id="i-UnfoldVertical" viewBox="0 0 24 24"><path d="M12 22v-6"/><path d="M12 8V2"/><path d="M4 12H2"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/><path d="m15 19-3 3-3-3"/><path d="m15 5-3-3-3 3"/></symbol>
+<symbol id="i-Shapes" viewBox="0 0 24 24"><path d="M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z"/><rect x="3" y="14" width="7" height="7" rx="1"/><circle cx="17.5" cy="17.5" r="3.5"/></symbol>
+<symbol id="i-Minus" viewBox="0 0 24 24"><path d="M5 12h14"/></symbol>
+<symbol id="i-Plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+<symbol id="i-Maximize" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></symbol>
+<symbol id="i-Map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z"/><path d="M15 5.764v15"/><path d="M9 3.236v15"/></symbol>
+<symbol id="i-MousePointer2" viewBox="0 0 24 24"><path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"/></symbol>
+<symbol id="i-PanelRight" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/></symbol>
+<symbol id="i-ListTree" viewBox="0 0 24 24"><path d="M8 5h13"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="M3 10a2 2 0 0 0 2 2h3"/><path d="M3 5v12a2 2 0 0 0 2 2h3"/></symbol>
+<symbol id="i-ArrowLeft" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+<symbol id="i-ArrowRight" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+<symbol id="i-ChevronRight" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+<symbol id="i-Layers" viewBox="0 0 24 24"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></symbol>
+<symbol id="i-RectangleHorizontal" viewBox="0 0 24 24"><rect width="20" height="12" x="2" y="6" rx="2"/></symbol>
+<symbol id="i-UserRound" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></symbol>
+<symbol id="i-Diamond" viewBox="0 0 24 24"><path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41l-7.59-7.59a2.41 2.41 0 0 0-3.41 0Z"/></symbol>
+<symbol id="i-CornerDownRight" viewBox="0 0 24 24"><path d="m15 10 5 5-5 5"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></symbol>
+<symbol id="i-CirclePlay" viewBox="0 0 24 24"><path d="M9 9.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997A1 1 0 0 1 9 14.996z"/><circle cx="12" cy="12" r="10"/></symbol>
+<symbol id="i-CircleCheck" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+<symbol id="i-LogOut" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/></symbol>
+<symbol id="i-CircleStop" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><rect x="9" y="9" width="6" height="6" rx="1"/></symbol>
+<symbol id="i-Files" viewBox="0 0 24 24"><path d="M15 2h-4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8"/><path d="M16.706 2.706A2.4 2.4 0 0 0 15 2v5a1 1 0 0 0 1 1h5a2.4 2.4 0 0 0-.706-1.706z"/><path d="M5 7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h8a2 2 0 0 0 1.732-1"/></symbol>
+<symbol id="i-Paperclip" viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></symbol>
+<symbol id="i-Undo2" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></symbol>
+<symbol id="i-Shuffle" viewBox="0 0 24 24"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/></symbol>
+<symbol id="i-RotateCcw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></symbol>
+<symbol id="i-ArrowDown" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></symbol></defs></svg>
+    <div id="app">
+      <header>
+        <div class="brand">
+          <span class="mark" data-icon="Workflow"></span><span>Skill 流程审阅</span
+          ><span class="crumb">技能创建与修订</span>
+        </div>
+        <div class="header-actions">
+          <div class="tabs" role="tablist" aria-label="视图">
+            <button id="graph-tab" role="tab" aria-selected="true" aria-controls="work">
+              <i data-icon="GitFork"></i>流程图</button
+            ><button id="text-tab" role="tab" aria-selected="false" aria-controls="textview">
+              <i data-icon="FileText"></i>文字版
+            </button>
+          </div>
+          <label class="select-wrap theme"
+            ><i data-icon="Monitor"></i
+            ><select id="theme" aria-label="主题">
+              <option value="system">跟随系统</option>
+              <option value="light">浅色</option>
+              <option value="dark">深色</option></select
+            ><i data-icon="ChevronDown"></i
+          ></label>
+        </div>
+      </header>
+      <section class="intro">
+        <div>
+          <h1>create-skill</h1>
+          <p id="desc"></p>
+        </div>
+        <div class="metrics" id="metrics"></div>
+      </section>
+      <main id="work" role="tabpanel" aria-labelledby="graph-tab">
+        <section class="workspace" aria-label="流程画布">
+          <div class="tools">
+            <div class="tool-group">
+              <label class="select-wrap walk-select"
+                ><i data-icon="Route"></i
+                ><select id="scenario" aria-label="示例走查">
+                  <option value="">示例走查</option></select
+                ><i data-icon="ChevronDown"></i></label
+              ><span class="sep"></span
+              ><button class="btn" id="collapse"><i data-icon="FoldVertical"></i>全部折叠</button
+              ><button class="btn" id="expand"><i data-icon="UnfoldVertical"></i>全部展开</button>
+            </div>
+            <button id="resources" class="switch" role="switch" aria-checked="false">
+              <span class="toggle"></span>显示资源
+            </button>
+          </div>
+          <div id="stage">
+            <div id="surface" tabindex="0" aria-label="流程画布，可拖动平移、滚轮缩放，双击步骤展开或折叠">
+              <div id="canvas"></div>
+              <svg id="fallback" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <g id="world"></g>
+              </svg>
+            </div>
+            <details class="legend float">
+              <summary><i data-icon="Shapes"></i>图例</summary>
+              <div id="legend" class="legend-grid"></div>
+            </details>
+            <div class="float zoom">
+              <button id="minus" class="square" title="缩小" aria-label="缩小">
+                <i data-icon="Minus"></i></button
+              ><output id="percent">100%</output
+              ><button id="plus" class="square" title="放大" aria-label="放大">
+                <i data-icon="Plus"></i></button
+              ><span class="sep"></span
+              ><button id="fit" class="square" title="适应画布" aria-label="适应画布">
+                <i data-icon="Maximize"></i>
+              </button>
+            </div>
+            <details class="mapbox float" open>
+              <summary><i data-icon="Map"></i>小地图</summary>
+              <svg id="mini" xmlns="http://www.w3.org/2000/svg" aria-label="点击或拖动小地图定位"></svg>
+            </details>
+          </div>
+          <footer class="status">
+            <span id="engine"></span
+            ><span><i data-icon="MousePointer2"></i>拖动画布 · 双击步骤展开或折叠</span>
+          </footer>
+        </section>
+        <aside aria-label="元素详情">
+          <div class="panel-head">
+            <span><i data-icon="PanelRight"></i>详情</span
+            ><button id="home" class="btn" title="返回流程概览"><i data-icon="ListTree"></i>步骤索引</button>
+          </div>
+          <section id="walk" hidden aria-live="polite">
+            <div class="case-name"><i data-icon="Route"></i><span id="case-name"></span></div>
+            <p id="case-request"></p>
+            <p id="case-note"></p>
+            <div class="walknav">
+              <button class="square" id="prev" aria-label="上一个走查位置" title="上一个（←）">
+                <i data-icon="ArrowLeft"></i></button
+              ><span id="case-index"></span
+              ><button class="square" id="next" aria-label="下一个走查位置" title="下一个（→）">
+                <i data-icon="ArrowRight"></i></button
+              ><button class="btn" id="stop">结束走查</button>
+            </div>
+          </section>
+          <div id="detail"></div>
+        </aside>
+      </main>
+      <main id="textview" role="tabpanel" aria-labelledby="text-tab" hidden>
+        <article>
+          <h2>SKILL.md</h2>
+          <pre id="text"></pre>
+        </article>
+      </main>
+    </div>
+    <script>
+const FLOW = {
+  name:'create-skill',
+  description:'当用户需要创建新的 skill，或修改已有 skill 的触发条件、执行流程或规则时使用。',
+  intro:['把用户的需求或一个已有的 skill，做成 Agent 能直接照着执行的 skill。先弄清用户真正要什么，再画出 skill 的流程图请用户确认，最后按流程图写成 SKILL.md 并检查。用户确认过的流程图是唯一依据：正文与流程图不一致时，以流程图为准。',
+         '用户给出的通常只是一条主线，你要把它补成一份完整、可执行的 skill。每一步要写清：从哪里拿输入，可能出现哪些情况，每种情况去哪里，哪里需要用户参与，什么时候结束。你补出来的内容要明确标出来，让用户能看到、能核对，不要等用户逐条指出。'],
+};
+const STEPS = {
+  '1': {title:'明确要开发什么样的 skill', input:'用户请求、相关对话和用户提供的材料',
+    acts:[{t:'先收集材料：读完用户的请求和相关对话，用户提供的文档、示例和现有做法也要完整读取'},
+          {t:'然后判断用户的真实意图', br:[
+            {when:'用户要修订已有的 skill（点名了某个 skill、给出了路径，或说“刚才那个”）', out:'修订'},
+            {when:'用户要新建，但这个需求不适合做成 skill', ask:'向用户说明原因并推荐更合适的做法', ans:[
+              {when:'用户接受建议', out:'改用其他方式'},
+              {when:'用户仍要做成 skill', out:'新建'}]},
+            {when:'用户要新建，并且适合做成 skill', out:'新建'}]}],
+    rules:[{t:'以下需求不适合做成 skill：只做一次的任务，直接完成即可；只适用于某个项目的约定，写进项目说明文件，如 CLAUDE.md 或 AGENTS.md；需要在某个事件发生时自动执行的行为，用 hook 配置；能用脚本或校验规则强制执行的机械约束，写成脚本或校验'}],
+    outcomes:[{tag:'修订', kind:'sub', to:'1.1'}, {tag:'新建', kind:'sub', to:'1.2'},
+              {tag:'改用其他方式', kind:'exit', res:'按建议处理，结束本次任务'}],
+    kids:['1.1','1.2','1.3']},
+  '1.1': {title:'找到并读懂要修订的 skill', input:'用户请求',
+    acts:[{t:'在个人 skill 目录、当前项目的 skill 目录和已安装的插件中，查找要修订的 skill', br:[
+            {when:'用户的描述对应多个 skill，或一个都对不上', ask:'列出最接近的候选请用户指认', goText:'重新查找'},
+            {when:'确实没有这个 skill', ask:'告诉用户，并询问是否改为新建', ans:[
+              {when:'用户同意', out:'改为新建'},
+              {when:'用户不同意', out:'不再修订'}]},
+            {when:'找到了', then:'完整读取它的 SKILL.md、引用的文件和脚本，以及同目录下的流程图 `flow.html`（如果有）'}]},
+          {t:'确定要修改的文件', br:[
+            {when:'找到的 skill 位于插件缓存等由别人维护的位置', ask:'说明直接修改会在插件更新时被覆盖，给出“复制到个人 skill 目录后再改”和“仍在原处改”两个选项，推荐前者', goText:'按用户的选择确定'},
+            {when:'它位于个人或项目的 skill 目录', then:'直接修改原文件'}]},
+          {t:'然后把用户的修改要求落到具体行为上：写清这个 skill 现在会怎样、改完应该怎样，并找一个能复现现状的具体请求'}],
+    out:'原 skill 的内容、要修改的文件、现状 → 期望、复现请求',
+    rules:[{t:'只依据读到的原文理解现有 skill，不要凭记忆或摘要', why:'否则容易误判要改的范围'}],
+    outcomes:[{tag:'修订依据就绪', kind:'next', to:'1.3'},
+              {tag:'改为新建', kind:'jump', to:'1.2', res:'改走新建路径', lane:0},
+              {tag:'不再修订', kind:'exit', res:'结束本次任务'}]},
+  '1.2': {title:'确认新 skill 的定位', input:'用户请求',
+    acts:[{t:'在已安装的 skill 中查找用途相近的', br:[
+            {when:'找到了', ask:'说明它们和这次需求的异同，给出“修订已有的”和“新建”两个选项并标出推荐', ans:[
+              {when:'用户选修订', out:'改为修订'},
+              {when:'用户选新建', then:'继续本步'}]},
+            {when:'没有找到', then:'继续本步'}]},
+          {t:'确定新 skill 存放在哪里', br:[
+            {when:'用户已经指明', then:'按用户说的'},
+            {when:'当前项目已有存放 skill 的约定', then:'按约定'},
+            {when:'都没有', ask:'询问用户，推荐只在本项目用的放项目目录，跨项目用的放个人目录', goText:'按回复确定'}]}],
+    out:'确认要新建，以及存放位置',
+    outcomes:[{tag:'定位已确认', kind:'next', to:'1.3'},
+              {tag:'改为修订', kind:'jump', to:'1.1', res:'改走修订路径', lane:1}]},
+  '1.3': {title:'核对需求是否完整', input:'步骤 1.1 或 1.2 的产出、对话和材料',
+    acts:[{t:'对照下面的清单逐项核对。能从对话、材料、项目文件或原 skill 中找到答案的，直接补上，不要拿去问用户', list:[
+            '解决什么问题：这个 skill 要解决的问题，以及没有它时 AI 通常会怎么做错',
+            '什么时候用：谁会在什么情况下用它，哪些相近的请求不该触发它',
+            '输入和交付：它拿到什么输入，交付什么结果，做到什么程度算完成',
+            '具体实例：至少一个真实的输入和期望的结果；修订时还要有能复现现状的请求',
+            '约束：必须遵守或不能做的事，可以使用的工具和环境',
+            '用户参与：哪些地方需要用户提供信息或做确认']},
+          {t:'根据核对结果', br:[
+            {when:'还有会影响流程走向的点不清楚', ask:'把这些点一次性问用户。每个问题说明你目前的理解，给出 2～3 个可选答案并标出推荐项；用户没给实例时，自拟一个放进问题里请用户确认', goText:'补全理解，再核对一遍'},
+            {when:'剩下的都不影响流程走向', then:'按最合理的方式自行补全，记下你的选择', out:'需求明确'}]}],
+    out:'需求摘要',
+    rules:[{t:'提问要集中，一次问清，不要零碎地反复追问'}],
+    outcomes:[{tag:'需求明确', kind:'next', to:'2'}]},
+  '2': {title:'生成或更新流程图', nest:'画的是目标 skill', input:'需求摘要、具体实例；修订时还有原 skill 和已有流程图',
+    acts:[{t:'按 `references/flowchart.md` 的规则，生成或更新目标 skill 的流程图，保存为 skill 目录下的 `flow.html`', br:[
+            {when:'是新建', then:'以实例为线索，从输入一路推到交付结果，画出主线。再挑一两个会走不同路线的情况推一遍，例如输入缺失、中途失败、用户否决，把分支补上'},
+            {when:'是修订', then:'在已有流程图上修改。没有流程图时，先把原 SKILL.md 如实还原成流程图，标出原文含糊或自相矛盾的地方，再只改受影响的部分，并在图上标出改动'}]},
+          {t:'流程图顶部写名称、触发描述、一句话用途，以及步骤 1 得到的需求摘要。每个步骤写清输入、动作、产出、可能的结果和各自的去向。画的时候，主动补全用户没有说到的部分', list:[
+            '每个输入从哪里来，拿不到时怎么办',
+            '动作失败或得到意外结果时去哪里',
+            '需要用户参与的地方，以及用户每种回复的去向',
+            '每个循环回到哪里、什么时候结束。可能反复多次的，写明最多几次，超过后怎么办',
+            '异常结束时告诉用户什么，留下什么']},
+          {t:'补全时遇到拿不准的地方，分两类处理', br:[
+            {when:'是方向性的问题，也就是有几种合理做法、选哪种结果明显不同', ask:'向用户提问：说明问题和取舍，给出 2～3 个建议做法并标出推荐项', goText:'按用户的选择画进图里'},
+            {when:'只是局部细节', then:'自行决定，并在图上标出你的选择，留给用户检查时一并核对'}]},
+          {t:'画完后先自查：每个结果都有去向，每个步骤从开始都走得到，每个循环都有退出条件，用实例沿着图走一遍能到达期望结果。发现问题先改好'},
+          {para:true, ask:'然后把流程图交给用户检查：告诉用户文件位置，概括主线、关键判断和你自行决定的细节；修订时说明改了哪里', ans:[
+            {when:'用户确认', out:'流程图已确认'},
+            {when:'问题出在需求理解上', out:'需求理解有误'},
+            {when:'问题出在流程图本身', then:'按意见修改', goText:'自查后再请用户检查'},
+            {when:'用户要暂停', out:'暂停'}]}],
+    out:'用户确认的 `flow.html`',
+    rules:[{t:'名称用“动词原形 + 对象”，只用小写字母、数字和连字符，如 `fix-bug`', why:'让人看名字就知道它做什么'},
+           {t:'触发描述用第三人称，写成“当用户……时使用”，只写什么时候用，不写怎么做。和已安装的相近 skill 有重叠时，写出能区分的场景'},
+           {t:'会改变走向的规则写成动作里的条件，其余约束写在对应步骤旁边'},
+           {t:'补全以实例和常见变化中真会遇到的情况为限，不为罕见的假想情况添加规则'},
+           {t:'参考资料类 skill 的流程可以很短，不要为了画图编造步骤'}],
+    outcomes:[{tag:'流程图已确认', kind:'next', to:'3'},
+              {tag:'需求理解有误', kind:'back', to:'1.3', res:'纠正理解，更新需求摘要，再修改流程图中受影响的部分，自查后重新请用户检查', lane:0},
+              {tag:'暂停', kind:'exit', res:'保存当前流程图，告诉用户下次从哪里继续，结束本次任务'}]},
+  '3': {title:'按流程图写成 skill', input:'用户确认的流程图；修订时还有原 SKILL.md',
+    acts:[{t:'按用户确认的流程图写出 SKILL.md。frontmatter 的 name 和 description 取自流程图顶部；正文开头用一段话说明这个 skill 做什么、交付什么；然后在“工作流”模块下按流程图逐步写出每个步骤，步骤编号与流程图一致。修订时只改受影响的部分，其余原文保持不变'},
+          {para:true, t:'写约束时，按它要防止的问题选择写法', list:[
+            '防止明知规则仍会违反，就写成明确的禁令，并说明理由',
+            '防止产出的形式走样，就正面写清产出由哪几部分组成、按什么顺序排列',
+            '防止漏掉某个要素，就在模板或清单里给它留出必填项',
+            '行为要视情况而定的，写成以可观察的条件开头的条件句，不要写“除非……”式的例外']},
+          {t:'写完后做两项检查。第一，对照流程图逐步核对，确认每个步骤、分支和去向都能在正文中找到，并且正文里没有图上没有的路径。第二，只看 SKILL.md，用实例走一遍：有子代理时，只把 SKILL.md 和实例的输入交给子代理去执行，观察它走的路线和结果；没有子代理时，自己逐步推演。另外，用一个相近但不该触发的请求检查触发描述。修订时，还要用复现请求确认原问题不再出现，并用一个与改动无关的请求确认原有行为没有被破坏。根据检查结果', br:[
+            {when:'正文与流程图不一致，或者执行时因为正文含糊而走错', then:'修改正文', goText:'再检查一遍'},
+            {when:'发现流程图本身有问题', out:'流程图有问题'},
+            {when:'触发判断有误', then:'修改触发描述，同步到流程图顶部', goText:'再检查一遍'},
+            {when:'检查都通过', out:'检查通过'}]}],
+    out:'SKILL.md、检查结果',
+    rules:[{t:'一级步骤写“步骤 1”，子步骤写“步骤 2.1”，跳转和回退写明目标步骤'},
+           {t:'每个步骤写成连贯的段落，分支用无序列表列出各种情况'},
+           {t:'用指令式语言写清依据什么、做什么、不同情况分别去哪里，需要等待或终止时也写明；循环写明回到哪里、什么时候结束'},
+           {t:'把约束写进它生效的那一步，不要集中堆在开头或末尾'},
+           {t:'不要把并列的条件写成先后步骤，也不要用重复说明和琐碎步骤盖过主线'},
+           {t:'交给子代理检查时，不要附上流程图或你的推理', why:'否则测不出正文本身是否够用'}],
+    outcomes:[{tag:'检查通过', kind:'next', to:'end', res:'向用户交付：说明文件位置、这个 skill 的主线、你在写作中自行做的选择、检查结果和仍待用户决定的事项，然后结束本次任务'},
+              {tag:'流程图有问题', kind:'back', to:'2', res:'修改流程图，经用户确认后再改正文', lane:1}]},
+};
+const TERMS = {
+  start:{title:'开始 · 收到 skill 请求', sub:'用户要新建一个 skill，或修改已有 skill 的触发、流程或规则'},
+  end:{title:'正常结束 · 交付目标 skill', sub:'SKILL.md、flow.html 和检查结果'},
+};
+const ORDER = ['start','1','2','3','end'];
+
+
+/* 简短名称：只用于展示，不进入正文。路径写法：步骤号 → 动作序号 → 分支序号（a=回复分支） */
+const LABELS = {
+  '1': {acts:['收集材料', '判断用户想做什么'],
+        br:{'1.0':'修订已有 skill', '1.1':'新建，但不适合做成 skill', '1.2':'新建，适合做成 skill'},
+        ask:{'1.1':'说明原因，推荐其他做法'},
+        ans:{'1.1.0':'接受建议', '1.1.1':'仍要做成 skill'}},
+  '1.1': {acts:['查找要修订的 skill', '确定要修改的文件', '整理“现状 → 期望”和复现请求'],
+        br:{'0.0':'对不上，或有多个', '0.1':'确实没有', '0.2':'找到了', '1.0':'在插件缓存里', '1.1':'在自己的目录里'},
+        ask:{'0.0':'请用户指认', '0.1':'问是否改为新建', '1.0':'说明会被覆盖，建议复制后再改'},
+        then:{'0.2':'读取 SKILL.md、引用文件和 flow.html'},
+        ans:{'0.1.0':'同意', '0.1.1':'不同意'}},
+  '1.2': {acts:['查找用途相近的 skill', '确定存放位置'],
+        br:{'0.0':'找到了', '0.1':'没有找到', '1.0':'用户已指明', '1.1':'项目有约定', '1.2':'都没有'},
+        ask:{'0.0':'说明异同，问修订还是新建', '1.2':'问放项目目录还是个人目录'},
+        ans:{'0.0.0':'选修订', '0.0.1':'选新建'}},
+  '1.3': {acts:['对照清单核对需求', '看核对结果'],
+        br:{'1.0':'还有影响走向的疑问', '1.1':'其余都清楚'},
+        ask:{'1.0':'一次性提问，每题给 2～3 个选项'},
+        then:{'1.1':'自行补全并记下选择'}},
+  '2': {acts:['生成或更新 flow.html', '写顶部信息，主动补全细节', '处理拿不准的地方', '自查', '请用户检查流程图'],
+        br:{'0.0':'新建', '0.1':'修订', '2.0':'方向性问题', '2.1':'局部细节'},
+        then:{'0.0':'按实例画主线，再推出分支', '0.1':'在原图上改；没有就先还原', '2.1':'自行决定，并在图上标出'},
+        ask:{'2.0':'给 2～3 个建议并推荐'},
+        ans:{'4.0':'确认', '4.1':'需求理解有误', '4.2':'流程图本身有问题', '4.3':'要暂停'}},
+  '3': {acts:['按流程图写 SKILL.md', '按要防止的问题选写法', '做两项检查'],
+        br:{'2.0':'正文有问题', '2.1':'流程图有问题', '2.2':'触发判断有误', '2.3':'都通过'},
+        then:{'2.2':'修改触发描述并同步到流程图'}},
+};
+
+/* skill 包里的资源。status：cited = 正文已引用；proposed = 建议拆分，尚未写进正文
+   usedBy：哪个步骤的第几个动作（从 0 开始）用到它，how 说明怎么用 */
+const RESOURCES = [
+  {path:'references/flowchart.md', type:'reference', title:'流程图规则', status:'cited',
+   purpose:'规定目标 skill 的流程图怎么画：步骤结构、分支写法、去向标记、简短名称和校验项。',
+   outline:['每个步骤写清输入、动作、产出和去向','动作和条件各配一个简短名称','分支按“条件 → 处理 → 去向”书写','去向分为继续、回退、转到、提前结束、终止五类','资源引用的标注方式','自查清单'],
+   usedBy:[{step:'2', act:0, how:'按其中的规则画流程图'}]},
+  {path:'references/decisions.md', type:'reference', title:'是否适合做成 skill', status:'proposed',
+   purpose:'判断一个需求该做成 skill，还是写进项目说明、配 hook 或写成脚本。',
+   outline:['适合做成 skill 的信号','只做一次的任务','只适用于某个项目的约定','事件触发的自动行为','能用脚本或校验强制的约束'],
+   usedBy:[{step:'1', act:1, how:'按其中的标准判断是否适合做成 skill'}]},
+  {path:'references/writing.md', type:'reference', title:'工作流写法', status:'proposed',
+   purpose:'把流程图写成 SKILL.md 正文时的写法规范。目前写在步骤 3 的约束里，建议整体下沉到这里。',
+   outline:['分层步骤编号与跳转写法','段落与分支列表的写法','按要防止的问题选择约束写法','约束写在生效的步骤里'],
+   usedBy:[{step:'3', act:0, how:'按其中的写法写正文'}, {step:'3', act:1, how:'按其中的规则选择约束写法'}]},
+  {path:'scripts/check-flow.js', type:'script', title:'流程图校验', status:'proposed',
+   purpose:'确定性地检查流程图：每个结果都有去向、每个步骤都走得到、每个循环都有退出条件、引用的资源都存在。',
+   outline:['输入：flow.html 中的流程数据','输出：问题清单，没有问题时返回成功'],
+   usedBy:[{step:'2', act:3, how:'运行它完成自查'}, {step:'3', act:2, how:'运行它核对正文与流程图'}]},
+  {path:'assets/flow-template.html', type:'asset', title:'流程图页面模板', status:'proposed',
+   purpose:'流程图的页面模板。画图时只填流程数据，版式和交互由模板提供。',
+   outline:['页面版式与样式','流程数据的填写位置','文字版导出'],
+   usedBy:[{step:'2', act:0, how:'用它生成 flow.html'}]},
+];
+
+const SCENARIOS = {
+  create:{name:'新建 skill', req:'把根据版本变更写发布说明的做法整理成 skill。', path:[
+    ['1','用户要新建一个写发布说明的 skill，适合做成 skill。'],
+    ['1/新建@2','新建，适合做成 skill → 进入步骤 1.2。'],
+    ['1.2','没有找到用途相近的 skill；放进项目的 skill 目录。'],
+    ['1.3','把两点一次性问用户，并自拟 v2.3 的实例请用户确认。'],
+    ['2','画出流程，自查后请用户检查。'],
+    ['2/需求理解有误','用户指出还要给运维人员看 → 回到步骤 1.3。'],
+    ['1.3','需求摘要加上“面向用户和运维两类读者”。'],
+    ['2','加上按读者区分的分支，用户确认。'],
+    ['3','写出 SKILL.md，两项检查都通过。'],
+    ['3/检查通过','交付 write-release-notes。'],
+  ]},
+  revise:{name:'修订 skill', req:'这份发布说明把内部日志调整也列出来了。修改刚才的 skill，只收录用户能感知的变化。', path:[
+    ['1','用户说“修改刚才的 skill”，找到了 write-release-notes。'],
+    ['1/修订','进入步骤 1.1。'],
+    ['1.1','读取原文，整理现状、期望和复现请求。'],
+    ['1.3','清单各项都已明确。'],
+    ['2','在“选取变更”处加分支并标出改动，用户确认。'],
+    ['3','只改这一步，复现和回归检查都通过。'],
+    ['3/检查通过','交付修订后的 skill。'],
+  ]},
+  exit:{name:'提前结束', req:'把之前那个 deploy-app 的 skill 改成先跑测试再部署。', path:[
+    ['1','用户点名了 deploy-app → 修订。'],
+    ['1.1','三个位置都找不到 deploy-app，问用户是否改为新建。'],
+    ['1.1/不再修订','用户不同意 → 结束本次任务。'],
+  ]},
+};
+
+const outcome = (sid, tag) => STEPS[sid].outcomes.find(o => o.tag === tag);
+const kidsOf = b => b.ans || b.br;
+const OFF = k => ['back','fail','jump','exit'].includes(k);
+function usedTags(sid) {
+  const tags = new Set();
+  function visit(item) {
+    if (item.out) tags.add(item.out);
+    (kidsOf(item) || []).forEach(visit);
+  }
+  STEPS[sid].acts.forEach(visit);
+  return tags;
+}
+
+function routeText(o){
+  if (o.kind === 'fail' || o.kind === 'exit') return o.res;
+  if (o.to === 'end') return o.res || '结束并交付 ' + TERMS.end.sub;
+  if (o.kind === 'back') return `回到步骤 ${o.to} ${o.res}`;
+  return `进入步骤 ${o.to}`;
+}
+function branchLines(sid, list, ind){
+  return list.map(b => {
+    const p = [], k = kidsOf(b);
+    if (b.then) p.push(b.then);
+    if (b.ask) p.push(b.ans ? `${b.ask}，等待回复` : `${b.ask}，等待回复后${b.goText || '继续'}`);
+    else if (b.goText) p.push(b.goText);
+    if (b.out) p.push(routeText(outcome(sid, b.out)));
+    const line = `${ind}- 如果${b.when}，${p.join('，')}${k ? '：' : '。'}`;
+    return k ? line + '\n' + branchLines(sid, k, ind + '  ') : line;
+  }).join('\n');
+}
+function stepText(sid, level){
+  const s = STEPS[sid]; const paras = []; let buf = '';
+  s.acts.forEach(a => {
+    const sentence = a.ask ? `${a.ask}，等待回复` : a.t, k = kidsOf(a);
+    if (a.para && buf){ paras.push(buf); buf = ''; }
+    if (a.list){ paras.push(buf + sentence + '：\n' + a.list.map(x => `- ${x}。`).join('\n')); buf = ''; }
+    else if (k){ paras.push(buf + sentence + '：\n' + branchLines(sid, k, '')); buf = ''; }
+    else buf += sentence + '。';
+  });
+  const used = usedTags(sid), rest = s.outcomes.filter(o => !used.has(o.tag) && !OFF(o.kind) || !used.has(o.tag) && o.when);
+  if (rest.length === 1 && !rest[0].when){ const tail = `完成后${routeText(rest[0])}。`; if (buf) buf += tail; else paras.push(tail); }
+  if (buf) paras.push(buf);
+  rest.filter(o => o.when).forEach(o => paras.push(`如果${o.when}，${routeText(o)}。`));
+  if (s.rules && s.rules.length) paras.push('要求：\n' + s.rules.map(r => `- ${r.t}${r.why ? '，' + r.why : ''}。`).join('\n'));
+  let out = `${'#'.repeat(level)} 步骤 ${sid}：${s.title}\n\n${paras.join('\n\n')}`;
+  if (s.kids) out += '\n\n' + s.kids.map(k => stepText(k, level + 1)).join('\n\n');
+  return out;
+}
+function skillText(){
+  return [`---\nname: ${FLOW.name}\ndescription: ${FLOW.description}\n---`, `# ${FLOW.name}`, ...FLOW.intro, '## 工作流',
+    ...ORDER.filter(id => STEPS[id]).map(id => stepText(id, 3))].join('\n\n');
+}
+</script>
+<script>
+// The semantic graph keeps branch paths and outcomes intact across folding.
+const stepIds = ORDER.filter((id) => STEPS[id]).flatMap((id) => [id, ...(STEPS[id].kids || [])]);
+const parentStep = Object.fromEntries(stepIds.flatMap((id) => (STEPS[id].kids || []).map((k) => [k, id])));
+const comboId = (s) => 'step:' + s;
+const actionId = (s, i) => 'act:' + s + ':' + i;
+const termId = (s, o) => (o.to === 'end' ? 'end' : 'term:' + s + ':' + o.tag);
+const numberMark = (i) => String.fromCodePoint(0x2460 + i);
+const label = (s, type, path, fallback) => LABELS[s]?.[type]?.[path] || fallback;
+const kindName = {
+  start: '开始',
+  end: '交付',
+  exit: '提前结束',
+  fail: '终止',
+  step: '步骤',
+  act: '顺序动作',
+  decide: '互斥判断',
+  ask: '等待用户',
+  handle: '分支处理',
+  resource: '资源',
+  merge: '分支汇合',
+  seq: '执行顺序',
+  branch: '条件',
+  answer: '用户回复',
+  next: '继续',
+  sub: '进入子步骤',
+  jump: '转到',
+  back: '回退',
+  redo: '本步重做',
+  use: '资源引用',
+};
+const retryAction = { '1.1/0.0': 0, '1.3/1.0': 0, '2/4.2': 3, '3/2.0': 2, '3/2.2': 2 };
+function buildModel() {
+  const items = new Map(),
+    links = [];
+  const add = (v) => (items.set(v.id, v), v.id);
+  function link(from, to, kind, title, meta = {}) {
+    links.push({ id: 'edge:' + links.length, from, to, kind, title, ...meta });
+  }
+  add({ id: 'start', kind: 'start', title: '收到 skill 请求' });
+  add({ id: 'end', kind: 'end', title: '交付目标 skill' });
+  link('start', comboId(stepIds[0]), 'next', '开始');
+  for (const s of stepIds) {
+    const step = STEPS[s];
+    add({ id: comboId(s), kind: 'step', s, parent: parentStep[s], title: '步骤 ' + s + ' · ' + step.title });
+    const defaults = step.outcomes.filter((o) => !usedTags(s).has(o.tag));
+    for (const o of step.outcomes.filter((o) => ['exit', 'fail'].includes(o.kind)))
+      add({ id: termId(s, o), s, kind: o.kind, title: kindName[o.kind] + ' · ' + o.tag, o });
+    function destination(from, o, caption, meta) {
+      const to = o.to && o.to !== 'end' ? comboId(o.to) : termId(s, o);
+      link(from, to, o.kind, caption || o.tag, { s, ...meta, o });
+    }
+    step.acts.forEach((a, i) => {
+      const action = actionId(s, i),
+        title = label(s, 'acts', i, a.t || a.ask);
+      const shared = { s, i, a };
+      const merge =
+        i === step.acts.length - 1 && kidsOf(a) && defaults.length ? 'merge:' + s + ':' + i : null;
+      if (merge) {
+        add({ id: merge, kind: 'merge', title: '分支汇合', ...shared });
+        defaults.forEach((o) => destination(merge, o, o.tag, { ...shared, defaultRoute: true }));
+      }
+      add({ id: action, kind: a.ask ? 'ask' : 'act', title, number: i, ...shared });
+      function following(from, caption, meta = {}) {
+        if (i + 1 < step.acts.length)
+          link(from, actionId(s, i + 1), meta.reply ? 'answer' : 'seq', caption || '继续', {
+            ...shared,
+            ...meta,
+          });
+        else if (merge)
+          link(from, merge, meta.reply ? 'answer' : 'seq', caption || '完成', { ...shared, ...meta });
+        else
+          defaults.forEach((o) =>
+            destination(from, o, caption || o.tag, { ...shared, ...meta, defaultRoute: true }),
+          );
+      }
+      function choices(from, list, prefix, replies, trail = []) {
+        list.forEach((b, j) => {
+          const path = prefix + '.' + j,
+            chain = [...trail, b],
+            stem = s + ':' + path;
+          let caption = (replies ? '用户：' : '') + label(s, replies ? 'ans' : 'br', path, b.when);
+          let prev = from;
+          const meta = { ...shared, b, path, chain, reply: replies };
+          function stage(kind, short) {
+            const id = add({ id: kind + ':' + stem, kind, title: short, ...meta });
+            link(prev, id, caption ? (replies ? 'answer' : 'branch') : 'seq', caption || '继续', meta);
+            prev = id;
+            caption = '';
+          }
+          if (b.then) stage('handle', label(s, 'then', path, b.then));
+          if (b.ask) stage('ask', label(s, 'ask', path, b.ask));
+          if (kidsOf(b)) {
+            if (b.br) stage('decide', '择一判断');
+            choices(prev, kidsOf(b), path, !!b.ans, chain);
+          } else if (b.out) {
+            destination(prev, outcome(s, b.out), caption, meta);
+          } else if (Object.hasOwn(retryAction, s + '/' + path)) {
+            const target = actionId(s, retryAction[s + '/' + path]);
+            link(prev, target, 'redo', (b.ask ? '用户：已回复 · ' : '') + '↻ ' + b.goText, {
+              ...meta,
+              redo: true,
+            });
+          } else {
+            following(
+              prev,
+              caption || (b.ask ? '用户：已回复' + (b.goText ? ' · ' + b.goText : '') : b.goText),
+              { ...meta, reply: !!b.ask },
+            );
+          }
+        });
+      }
+      if (a.br) {
+        const gate = add({ id: 'decide:' + s + ':' + i, kind: 'decide', title: '择一判断', ...shared });
+        link(action, gate, 'seq', '判断', shared);
+        choices(gate, a.br, String(i), false);
+      } else if (a.ans) choices(action, a.ans, String(i), true);
+      else following(action);
+    });
+    // The Combo is the target of external links. Its entrance leads to its first action.
+    link(comboId(s), actionId(s, 0), 'seq', '执行', { s, entry: true });
+  }
+  RESOURCES.forEach((r, j) => {
+    const id = add({ id: 'resource:' + j, kind: 'resource', title: r.title, r });
+    r.usedBy.forEach((u) => link(id, actionId(u.step, u.act), 'use', '引用', { s: u.step, i: u.act, r, u }));
+  });
+  return { items, links };
+}
+const model = buildModel();
+function ancestor(s, collapsed) {
+  for (let p = parentStep[s]; p; p = parentStep[p]) if (collapsed.has(p)) return ancestor(p, collapsed);
+  return s;
+}
+function project(collapsed, resources) {
+  const visible = new Map(),
+    edges = [],
+    merged = new Map();
+  function representative(id) {
+    const v = model.items.get(id);
+    if (v.kind === 'resource') {
+      const usedHere = v.r.usedBy.some(
+        (u) => !collapsed.has(u.step) && ancestor(u.step, collapsed) === u.step,
+      );
+      return resources && usedHere ? id : null;
+    }
+    if (!v.s || v.o) return id;
+    const s = ancestor(v.s, collapsed);
+    return s !== v.s || (v.kind !== 'step' && collapsed.has(s)) ? comboId(s) : id;
+  }
+  model.items.forEach((v, id) => {
+    if (representative(id) === id) visible.set(id, { ...v, folded: v.kind === 'step' && collapsed.has(v.s) });
+  });
+  for (const e of model.links) {
+    const from = representative(e.from),
+      to = representative(e.to);
+    if (!from || !to || from === to || (e.kind === 'use' && to !== e.to)) continue;
+    const folded = from !== e.from || to !== e.to;
+    const title = folded && e.o ? e.o.tag : e.title;
+    const key = folded ? JSON.stringify([from, to, e.kind, title]) : e.id;
+    if (merged.has(key)) {
+      merged.get(key).members.push(e);
+      continue;
+    }
+    const item = { ...e, from, to, title, members: [e] };
+    merged.set(key, item);
+    edges.push(item);
+  }
+  return { items: visible, edges, representative };
+}
+const glyphWidth = (s, px) =>
+  Array.from(s).reduce((a, c) => a + (/[\x00-\x7f]/.test(c) ? (/[il .:,·]/.test(c) ? 0.36 : 0.62) : 1), 0) *
+  px;
+const rect = (x, y, w, h) => ({ x, y, w, h });
+const left = (b) => b.x - b.w / 2,
+  right = (b) => b.x + b.w / 2,
+  topY = (b) => b.y - b.h / 2,
+  bottom = (b) => b.y + b.h / 2;
+function bounds(boxes) {
+  const l = Math.min(...boxes.map(left)),
+    r = Math.max(...boxes.map(right)),
+    t = Math.min(...boxes.map(topY)),
+    b = Math.max(...boxes.map(bottom));
+  return rect((l + r) / 2, (t + b) / 2, r - l, b - t);
+}
+function sizeItem(v) {
+  if (v.kind === 'decide') return [102, 50];
+  if (v.kind === 'merge') return [14, 14];
+  const extra = (v.number !== undefined ? 32 : 0) + (v.a?.list && v.kind === 'act' ? 84 : 0);
+  return [Math.max(v.kind === 'resource' ? 180 : 132, Math.ceil(glyphWidth(v.title, 15)) + 48 + extra), 44];
+}
+function layout(scene) {
+  const { items } = scene,
+    boxes = new Map();
+  function put(id, x, y) {
+    const [w, h] = sizeItem(items.get(id));
+    boxes.set(id, rect(x, y, w, h));
+  }
+  function translate(ids, dx, dy) {
+    ids.forEach((id) => {
+      const b = boxes.get(id);
+      b.x += dx;
+      b.y += dy;
+    });
+  }
+  // Siblings entered from alternative outcomes share a row. Their common successor is below.
+  function block(s, level = 0) {
+    const id = comboId(s),
+      st = STEPS[s],
+      v = items.get(id),
+      ids = [];
+    if (v.folded) {
+      boxes.set(id, rect(0, 0, Math.max(350, glyphWidth(v.title, 16) + 122), 58));
+      return [id];
+    }
+    let y = 0;
+    st.acts.forEach((a, i) => {
+      const action = actionId(s, i);
+      put(action, 0, y);
+      ids.push(action);
+      if (a.br) {
+        const frontier = 'decide:' + s + ':' + i;
+        y += 100;
+        put(frontier, 0, y);
+        ids.push(frontier);
+      }
+      // Recursively reserve disjoint horizontal intervals for mutually exclusive alternatives.
+      function tree(list, path) {
+        return list.map((b, j) => {
+          const key = path + '.' + j,
+            group = ['handle', 'ask', ...(b.br ? ['decide'] : [])]
+              .map((k) => k + ':' + s + ':' + key)
+              .filter((k) => items.has(k));
+          const children = kidsOf(b) ? tree(kidsOf(b), key) : [];
+          const width = Math.max(
+            130,
+            ...group.map((k) => sizeItem(items.get(k))[0]),
+            children.reduce((n, c) => n + c.width, 0) + Math.max(0, children.length - 1) * 78,
+          );
+          return { group, children, width };
+        });
+      }
+      function place(row, cx, yy) {
+        const total = row.reduce((n, b) => n + b.width, 0) + (row.length - 1) * 78;
+        let x = cx - total / 2,
+          deepest = y;
+        for (const branch of row) {
+          const bx = x + branch.width / 2;
+          let by = yy;
+          for (const k of branch.group) {
+            put(k, bx, by);
+            ids.push(k);
+            deepest = Math.max(deepest, by);
+            by += 102;
+          }
+          if (branch.children.length) deepest = Math.max(deepest, place(branch.children, bx, by + 25));
+          x += branch.width + 78;
+        }
+        return deepest;
+      }
+      const list = kidsOf(a);
+      if (list) y = place(tree(list, String(i)), 0, y + 138);
+      const merge = 'merge:' + s + ':' + i;
+      if (items.has(merge)) {
+        y += 105;
+        put(merge, 0, y);
+        ids.push(merge);
+      }
+      y += 140;
+    });
+    const children = st.kids || [];
+    const starters = new Set(st.outcomes.filter((o) => o.kind === 'sub').map((o) => o.to));
+    for (const row of [children.filter((k) => starters.has(k)), children.filter((k) => !starters.has(k))]) {
+      if (!row.length) continue;
+      const groups = row.map((k) => ({ k, ids: block(k, level + 1), box: boxes.get(comboId(k)) }));
+      const gap = 210,
+        total = groups.reduce((n, g) => n + g.box.w, 0) + gap * (groups.length - 1);
+      let x = -total / 2,
+        maxH = 0;
+      for (const g of groups) {
+        const w = g.box.w,
+          h = g.box.h;
+        translate(g.ids, x + w / 2 - g.box.x, y - topY(g.box));
+        ids.push(...g.ids);
+        x += w + gap;
+        maxH = Math.max(maxH, h);
+      }
+      y += maxH + 135;
+    }
+    const b = bounds(ids.map((k) => boxes.get(k)));
+    const w = Math.max(402, b.w + (level ? 70 : 112)),
+      h = b.h + 142;
+    boxes.set(id, rect(b.x, b.y - 21, w, h));
+    ids.push(id);
+    return ids;
+  }
+  put('start', 0, 0);
+  let y = 108;
+  for (const s of ORDER.filter((s) => STEPS[s])) {
+    const ids = block(s),
+      b = boxes.get(comboId(s));
+    translate(ids, -b.x, y - topY(b));
+    y += b.h + 110;
+  }
+  put('end', 0, y - 28);
+  const rootBounds = bounds([...boxes.values()]);
+  const terminals = [...items.values()].filter((v) => v.o);
+  let last = -Infinity;
+  for (const v of terminals.sort((a, b) => originY(a) - originY(b))) {
+    const yy = Math.max(last + 80, originY(v));
+    put(v.id, right(rootBounds) + 250, yy);
+    last = yy;
+  }
+  function originY(v) {
+    const e = scene.edges.find((e) => e.to === v.id);
+    return boxes.get(e.from).y;
+  }
+  const res = [...items.values()]
+    .filter((v) => v.kind === 'resource')
+    .map((v) => {
+      const es = scene.edges.filter((e) => e.from === v.id);
+      return { v, y: es.reduce((n, e) => n + boxes.get(e.to).y, 0) / es.length };
+    })
+    .sort((a, b) => a.y - b.y);
+  last = -Infinity;
+  for (const o of res) {
+    const yy = Math.max(last + 86, o.y);
+    put(o.v.id, left(rootBounds) - 300, yy);
+    last = yy;
+  }
+  scene.boxes = boxes;
+  return scene;
+}
+</script>
+<script>
+// Visibility grid: gutters follow obstacle borders; search penalizes bends and reused tracks.
+function intersects(a, b) {
+  return left(a) < right(b) && right(a) > left(b) && topY(a) < bottom(b) && bottom(a) > topY(b);
+}
+function hits(p, q, b) {
+  if (p[0] === q[0])
+    return (
+      p[0] > left(b) && p[0] < right(b) && Math.min(p[1], q[1]) < bottom(b) && Math.max(p[1], q[1]) > topY(b)
+    );
+  return (
+    p[1] > topY(b) && p[1] < bottom(b) && Math.min(p[0], q[0]) < right(b) && Math.max(p[0], q[0]) > left(b)
+  );
+}
+function simplify(points) {
+  const line = [];
+  for (const p of points) {
+    const b = line.at(-1),
+      a = line.at(-2);
+    if (b && b[0] === p[0] && b[1] === p[1]) continue;
+    if (a && ((a[0] === b[0] && b[0] === p[0]) || (a[1] === b[1] && b[1] === p[1]))) line.pop();
+    line.push(p);
+  }
+  return line;
+}
+class MinQueue {
+  q = [];
+  push(el) {
+    const a = this.q;
+    let n = a.length;
+    a.push(el);
+    while (n > 0) {
+      const p = (n - 1) >> 1;
+      if (a[p][0] <= el[0]) break;
+      a[n] = a[p];
+      n = p;
+    }
+    a[n] = el;
+  }
+  pop() {
+    const a = this.q,
+      first = a[0],
+      tail = a.pop();
+    if (a.length) {
+      let n = 0;
+      while (n * 2 + 1 < a.length) {
+        let c = n * 2 + 1;
+        if (c + 1 < a.length && a[c + 1][0] < a[c][0]) c++;
+        if (a[c][0] >= tail[0]) break;
+        a[n] = a[c];
+        n = c;
+      }
+      a[n] = tail;
+    }
+    return first;
+  }
+}
+const distance = (p, q) => Math.abs(p[0] - q[0]) + Math.abs(p[1] - q[1]);
+function trackCost(p, q, tracks) {
+  const horiz = p[1] === q[1],
+    axis = horiz ? 0 : 1,
+    fixed = 1 - axis;
+  const lo = Math.min(p[axis], q[axis]),
+    hi = Math.max(p[axis], q[axis]);
+  let cost = 0;
+  for (const [a, b] of tracks) {
+    if (a[fixed] === b[fixed]) {
+      if (a[fixed] === p[fixed])
+        cost +=
+          Math.max(0, Math.min(hi, Math.max(a[axis], b[axis])) - Math.max(lo, Math.min(a[axis], b[axis]))) *
+          2.5;
+    } else if (
+      a[axis] > lo &&
+      a[axis] < hi &&
+      p[fixed] > Math.min(a[fixed], b[fixed]) &&
+      p[fixed] < Math.max(a[fixed], b[fixed])
+    )
+      cost += 26;
+  }
+  return cost;
+}
+function findRoute(start, end, obstacles, tracks) {
+  const direct = [start, [start[0], end[1]], end],
+    other = [start, [end[0], start[1]], end];
+  const clear = (p, q) => !obstacles.some((b) => hits(p, q, b));
+  for (const line of [direct, other]) {
+    if (line.slice(1).every((q, i) => clear(line[i], q) && trackCost(line[i], q, tracks) === 0))
+      return simplify(line);
+  }
+  const xs = new Set([start[0], end[0]]),
+    ys = new Set([start[1], end[1]]);
+  // Local obstacles and outside tracks keep the grid compact even for fully expanded diagrams.
+  const area = rect(
+    (start[0] + end[0]) / 2,
+    (start[1] + end[1]) / 2,
+    Math.abs(start[0] - end[0]) + 600,
+    Math.abs(start[1] - end[1]) + 420,
+  );
+  const near = obstacles.filter((b) => intersects(area, b));
+  for (const b of near) {
+    for (const d of [0, 18]) {
+      xs.add(left(b) - d);
+      xs.add(right(b) + d);
+      ys.add(topY(b) - d);
+      ys.add(bottom(b) + d);
+    }
+  }
+  xs.add(left(area));
+  xs.add(right(area));
+  ys.add(topY(area));
+  ys.add(bottom(area));
+  const xx = [...xs].sort((a, b) => a - b),
+    yy = [...ys].sort((a, b) => a - b);
+  const w = xx.length,
+    sid = yy.indexOf(start[1]) * w + xx.indexOf(start[0]),
+    tid = yy.indexOf(end[1]) * w + xx.indexOf(end[0]);
+  const point = (id) => [xx[id % w], yy[Math.floor(id / w)]];
+  const queue = new MinQueue(),
+    best = new Map(),
+    prev = new Map(),
+    pass = new Map();
+  queue.push([distance(start, end), sid * 3, 0]);
+  best.set(sid * 3, 0);
+  while (queue.q.length) {
+    const [, key, cost] = queue.pop(),
+      id = Math.floor(key / 3),
+      dir = key % 3;
+    if (cost !== best.get(key)) continue;
+    if (id === tid) {
+      const result = [];
+      let k = key;
+      while (k !== undefined) {
+        result.push(point(Math.floor(k / 3)));
+        k = prev.get(k);
+      }
+      return simplify(result.reverse());
+    }
+    const p = point(id),
+      ix = id % w,
+      iy = Math.floor(id / w);
+    for (const [nx, ny, nd] of [
+      [ix + 1, iy, 1],
+      [ix - 1, iy, 1],
+      [ix, iy + 1, 2],
+      [ix, iy - 1, 2],
+    ]) {
+      if (nx < 0 || nx >= w || ny < 0 || ny >= yy.length) continue;
+      const next = ny * w + nx,
+        k = next * 3 + nd,
+        q = [xx[nx], yy[ny]];
+      const seg = Math.min(id, next) * w * yy.length + Math.max(id, next);
+      if (!pass.has(seg)) pass.set(seg, clear(p, q) ? distance(p, q) + trackCost(p, q, tracks) : Infinity);
+      const c = cost + pass.get(seg) + (dir && dir !== nd ? 32 : 0);
+      if (c >= (best.get(k) ?? Infinity)) continue;
+      best.set(k, c);
+      prev.set(k, key);
+      queue.push([c + distance(q, end), k, c]);
+    }
+  }
+  throw new Error('找不到避开节点的连线 ' + JSON.stringify([start, end]));
+}
+function route(scene) {
+  const { items, boxes, edges } = scene,
+    obs = [];
+  const inside = (v, s) => v.kind !== 'resource' && !v.o && (v.s === s || ancestorOf(s, v.s));
+  function ancestorOf(s, k) {
+    for (let p = parentStep[k]; p; p = parentStep[p]) if (p === s) return true;
+    return false;
+  }
+  for (const [id, b] of boxes) {
+    const v = items.get(id);
+    if (v.kind === 'step' && !v.folded) obs.push({ id, b: rect(b.x, topY(b) + 24, b.w, 48), header: true });
+    else obs.push({ id, b });
+  }
+  function sides(e) {
+    const a = boxes.get(e.from),
+      b = boxes.get(e.to);
+    if (e.kind === 'use') return ['R', 'L'];
+    if (e.kind === 'back') return ['L', 'L'];
+    if (e.kind === 'jump') return a.x < b.x ? ['R', 'L'] : ['L', 'R'];
+    if (['exit', 'fail'].includes(e.kind)) return ['R', 'L'];
+    if (e.kind === 'redo') return ['L', 'L'];
+    return ['B', 'T'];
+  }
+  const ports = new Map();
+  for (const e of edges) {
+    e.sides = sides(e);
+    [e.from, e.to].forEach((id, i) => {
+      const k = id + '/' + e.sides[i] + (e.entry ? 'entry' : '');
+      if (!ports.has(k)) ports.set(k, []);
+      ports.get(k).push({ e, i, id, other: boxes.get(i ? e.from : e.to) });
+    });
+  }
+  for (const group of ports.values()) {
+    const side = group[0].e.sides[group[0].i],
+      vert = side === 'T' || side === 'B';
+    group.sort((a, b) => (vert ? a.other.x - b.other.x : a.other.y - b.other.y));
+    group.forEach(({ e, i, id }, j) => {
+      const b = boxes.get(id),
+        v = items.get(id),
+        step = v.kind === 'step' && !v.folded;
+      const offset =
+        (j - (group.length - 1) / 2) * Math.min(20, (vert ? b.w - 30 : b.h - 16) / (group.length || 1));
+      const x = b.x + offset,
+        y = (step ? topY(b) + 31 : b.y) + offset;
+      const dock = {
+        T: [x, topY(b)],
+        B: [x, step && e.entry ? topY(b) + 48 : bottom(b)],
+        L: [left(b), y],
+        R: [right(b), y],
+      }[side];
+      if (v.kind === 'decide' && vert) dock[1] += ((side === 'T' ? 1 : -1) * Math.abs(offset) * b.h) / b.w;
+      e[i ? 'endPort' : 'startPort'] = dock;
+    });
+  }
+  const shift = (p, s, len) => [p[0] + ({ L: -len, R: len }[s] || 0), p[1] + ({ T: -len, B: len }[s] || 0)];
+  const tracks = [],
+    all = bounds([...boxes.values()].filter((b) => b));
+  const priority = (e) =>
+    e.kind === 'use' ? 4 : ['back', 'jump', 'exit', 'fail', 'redo'].includes(e.kind) ? 3 : e.o ? 2 : 0;
+  const rank = [...edges].sort((a, b) => priority(a) - priority(b));
+  for (const e of rank) {
+    const a = items.get(e.from),
+      b = items.get(e.to),
+      obstacles = obs.map((o) => o.b);
+    for (const [id, v] of items)
+      if (v.kind === 'step' && !v.folded && !inside(a, v.s) && !inside(b, v.s)) obstacles.push(boxes.get(id));
+    const padded = obstacles.map((b) => rect(b.x, b.y, b.w + 16, b.h + 16));
+    const p = e.startPort,
+      q = e.endPort;
+    const p1 = shift(p, e.sides[0], 24),
+      q1 = shift(q, e.sides[1], 24);
+    const way = [p1];
+    if (e.kind === 'back') {
+      const outer =
+        Math.min(...ORDER.filter((k) => STEPS[k]).map((k) => left(boxes.get(comboId(k))))) -
+        64 -
+        (e.o.lane || 0) * 38;
+      // Only force the vertical channel; the search chooses clear access points at both ends.
+      const safeY = (desired, sign) => {
+        for (let y = desired; ; y += sign * 16)
+          if (!padded.some((o) => outer > left(o) && outer < right(o) && y > topY(o) && y < bottom(o)))
+            return y;
+      };
+      way.push([outer, safeY(p1[1], 1)], [outer, safeY(q1[1], -1)]);
+    }
+    way.push(q1);
+    const points = [p];
+    for (let i = 1; i < way.length; i++) points.push(...findRoute(way[i - 1], way[i], padded, tracks));
+    points.push(q);
+    e.points = simplify(points);
+    e.points.slice(1).forEach((v, i) => tracks.push([e.points[i], v]));
+  }
+  const occupied = obs.map((o) => o.b);
+  for (const e of [...edges].sort((a, b) => Number(!!b.b) - Number(!!a.b))) {
+    const w = glyphWidth(e.title, 12) + 14,
+      h = 20;
+    let winner,
+      score = Infinity;
+    for (let i = 1; i < e.points.length; i++) {
+      const a = e.points[i - 1],
+        b = e.points[i],
+        horizontal = a[1] === b[1],
+        len = distance(a, b);
+      for (const at of [0.5, 0.25, 0.75, 0.125, 0.875])
+        for (const pad of [0, 7, 18, 32, 50, 74])
+          for (const sign of [1, -1]) {
+            const off = horizontal ? (h / 2 + 3 + pad) * -sign : (w / 2 + 4 + pad) * sign;
+            const box = rect(
+              a[0] + (b[0] - a[0]) * at + (horizontal ? 0 : off),
+              a[1] + (b[1] - a[1]) * at + (horizontal ? off : 0),
+              w,
+              h,
+            );
+            const overlap = occupied.some((o) => intersects(o, box));
+            const crossings = tracks.reduce((n, [p, q]) => n + Number(hits(p, q, box)), 0);
+            const value =
+              Number(overlap) * 1e8 +
+              crossings * 100 +
+              pad * 1.5 +
+              Math.abs(0.5 - at) * 4 +
+              (sign < 0 ? 1 : 0) +
+              i * 0.4 +
+              Math.max(0, (horizontal ? w : h) - len);
+            if (value < score) {
+              winner = box;
+              score = value;
+            }
+            if (value < 1) break;
+          }
+    }
+    e.labelBox = winner;
+    occupied.push(winner);
+  }
+  scene.extent = bounds([
+    all,
+    ...edges.flatMap((e) => [e.labelBox, ...e.points.map(([x, y]) => rect(x, y, 2, 2))]),
+  ]);
+  return scene;
+}
+</script>
+<script>
+// Both the G6 canvas and the small overview use the same world coordinates.
+const palette = {
+  light: {
+    page: '#f7f8fb',
+    ink: '#20232d',
+    muted: '#626a79',
+    line: '#8994a6',
+    paper: '#ffffff',
+    group: '#f3f6ff',
+    sub: '#fafbff',
+    rim: '#94ace9',
+    blue: '#355cc5',
+    tint: '#e9efff',
+    act: '#c2cbd9',
+    ask: '#96580a',
+    askBg: '#fff4d9',
+    askLine: '#d8a142',
+    decision: '#5741ab',
+    decBg: '#f0eafe',
+    decLine: '#ad98db',
+    end: '#13704d',
+    endBg: '#e0f5e9',
+    exit: '#a14b1f',
+    exitBg: '#fff0e6',
+    fail: '#b02446',
+    failBg: '#ffe6ec',
+    back: '#b45324',
+    jump: '#7953bd',
+    res: '#15747b',
+    resBg: '#e6f5f4',
+  },
+  dark: {
+    page: '#15171c',
+    ink: '#ebedf5',
+    muted: '#abb2c2',
+    line: '#8a95a9',
+    paper: '#202329',
+    group: '#1b2130',
+    sub: '#202638',
+    rim: '#536a9e',
+    blue: '#9cb6ff',
+    tint: '#2c3958',
+    act: '#626d81',
+    ask: '#ffcf81',
+    askBg: '#3a2d1d',
+    askLine: '#9e783f',
+    decision: '#d4c3ff',
+    decBg: '#322c45',
+    decLine: '#8671b1',
+    end: '#8fe1b6',
+    endBg: '#1d382e',
+    exit: '#ffb387',
+    exitBg: '#3b2a24',
+    fail: '#ff94ac',
+    failBg: '#402630',
+    back: '#f7a278',
+    jump: '#c6a2fa',
+    res: '#87d5d5',
+    resBg: '#1c3337',
+  },
+};
+const fontFamily = '"Geist", "PingFang SC", "Microsoft YaHei", sans-serif';
+function drawing(v, scene, p, marks = {}) {
+  const parts = [],
+    edge = !!v.points,
+    b = edge ? null : scene.boxes.get(v.id);
+  const active = marks.current?.has(v.id),
+    visited = marks.visited?.has(v.id),
+    selected = marks.selected === v.id;
+  const faded = marks.walk && !active && !visited;
+  const op = faded ? 0.28 : 1;
+  const add = (key, tag, style) => parts.push({ key, tag, style: { ...style, opacity: op } });
+  const rr = (k, x, y, w, h, r, fill, stroke, width = 1, dash = []) =>
+    add(k, 'rect', { x, y, width: w, height: h, radius: r, fill, stroke, lineWidth: width, lineDash: dash });
+  const line = (k, d, stroke, width = 1, fill = 'none', dash = []) =>
+    add(k, 'path', {
+      d,
+      stroke,
+      lineWidth: width,
+      fill,
+      lineDash: dash,
+      lineCap: 'round',
+      lineJoin: 'round',
+    });
+  const txt = (k, x, y, text, fill, fontSize = 14, fontWeight = 500, textAlign = 'center') =>
+    add(k, 'text', { x, y, text, fill, fontSize, fontWeight, fontFamily, textAlign, textBaseline: 'middle' });
+  const ink = active || selected ? p.blue : p.ink;
+  if (edge) {
+    const c =
+      {
+        back: p.back,
+        jump: p.jump,
+        exit: p.exit,
+        fail: p.fail,
+        redo: p.back,
+        use: p.res,
+        branch: p.decision,
+        answer: p.ask,
+        sub: p.blue,
+      }[v.kind] || (v.reply && scene.items.get(v.from)?.kind === 'ask' ? p.ask : p.line);
+    const color =
+      active || selected ? (['back', 'jump', 'exit', 'fail', 'use'].includes(v.kind) ? c : p.blue) : c;
+    const dash = { back: [9, 5], jump: [4, 5], use: [2, 5], redo: [5, 3] }[v.kind] || [];
+    const pts = v.points,
+      path = pts.map(([x, y], i) => (i ? 'L' : 'M') + x + ',' + y).join(' ');
+    const lw = active || selected ? 3.6 : v.kind === 'use' ? 1.15 : 1.7;
+    line('key', path, color, lw, 'none', dash);
+    const end = pts.at(-1),
+      start = pts.at(-2),
+      dx = Math.sign(end[0] - start[0]),
+      dy = Math.sign(end[1] - start[1]),
+      n = 7;
+    if (v.kind !== 'use')
+      line(
+        'arrow',
+        `M${end}l${-dx * n - dy * n * 0.47},${-dy * n + dx * n * 0.47}l${dy * n * 0.94},${-dx * n * 0.94}Z`,
+        color,
+        1,
+        color,
+      );
+    const lb = v.labelBox;
+    rr('label-bg', left(lb), topY(lb), lb.w, lb.h, 5, active ? p.tint : p.paper, active ? p.rim : 'none', 1);
+    txt('label', lb.x, lb.y, v.title, active ? p.blue : c === p.line ? p.muted : c, 12, active ? 700 : 530);
+    return parts;
+  }
+  const l = -b.w / 2,
+    t = -b.h / 2;
+  const stroke = (base) => (active || selected ? p.blue : base),
+    weight = active || selected ? 2.8 : visited ? 2 : 1.3;
+  if (v.kind === 'step') {
+    rr('key', l, t, b.w, b.h, 12, v.folded ? p.paper : v.parent ? p.sub : p.group, stroke(p.rim), weight);
+    const cy = v.folded ? 0 : t + 24;
+    if (!v.folded) line('divider', `M${l + 12},${t + 48}H${-l - 12}`, p.rim, 0.8);
+    rr('toggle-bg', l + 14, cy - 11, 22, 22, 5, p.tint, 'none');
+    line('toggle', v.folded ? `M${l + 23},${cy - 4}l4,4l-4,4` : `M${l + 21},${cy - 2}l4,4l4,-4`, p.blue, 1.8);
+    txt('title', l + 46, cy, v.title, ink, 16, 650, 'left');
+    const count = STEPS[v.s].rules?.length || 0;
+    {
+      rr('rule-bg', -l - 72, cy - 11, 58, 22, 5, p.tint, 'none');
+      txt('rule', -l - 43, cy, '约束 ' + count, p.blue, 12, 600);
+    }
+    return parts;
+  }
+  if (v.kind === 'merge') {
+    rr('key', l, t, b.w, b.h, b.w / 2, p.decLine, stroke(p.decision), 1.2);
+    return parts;
+  }
+  if (v.kind === 'decide') {
+    line('key', `M0,${t}L${-l},0L0,${-t}L${l},0Z`, stroke(p.decLine), weight, p.decBg);
+    txt('title', 0, 0, v.title, p.decision, 12, 650);
+    return parts;
+  }
+  const terminal = ['start', 'end', 'exit', 'fail'].includes(v.kind);
+  const colors = {
+    act: [p.paper, p.act, ink],
+    handle: [p.paper, p.decLine, p.decision],
+    ask: [p.askBg, p.askLine, p.ask],
+    start: [p.tint, p.blue, p.blue],
+    end: [p.endBg, p.end, p.end],
+    exit: [p.exitBg, p.exit, p.exit],
+    fail: [p.failBg, p.fail, p.fail],
+    resource: [p.resBg, p.res, p.res],
+  };
+  const [fill, border, color] = colors[v.kind];
+  rr(
+    'key',
+    l,
+    t,
+    b.w,
+    b.h,
+    terminal ? b.h / 2 : v.kind === 'handle' ? 5 : 9,
+    fill,
+    stroke(border),
+    weight,
+    v.r?.status === 'proposed' ? [5, 4] : [],
+  );
+  let x = l + 14;
+  if (v.kind === 'handle') {
+    line('bar', `M${x - 5},-8v16`, p.decLine, 2.5);
+    x += 3;
+  }
+  if (v.number !== undefined) {
+    txt('number', x + 8, 0, numberMark(v.number), v.kind === 'ask' ? p.ask : p.blue, 18, 600);
+    x += 27;
+  }
+  if (v.kind === 'ask') {
+    line('person', `M${x + 8},-8a3,3 0 1,0 .01,0M${x + 1},7v-1a6,5 0 0,1 12,0v1`, color, 1.65);
+    x += 21;
+  }
+  if (v.kind === 'resource') {
+    line('file', `M${x},-8h8l4,4V8H${x}ZM${x + 7},-8v5h5`, color, 1.5);
+    x += 21;
+  }
+  if (terminal) {
+    const sym = {
+      start: `M${x + 2},-6l9,6l-9,6Z`,
+      end: `M${x},0l4,4l8,-8`,
+      exit: `M${x},-6v12M${x + 3},0h10m-4,-4l4,4l-4,4`,
+      fail: `M${x + 1},-5l10,10m0,-10l-10,10`,
+    }[v.kind];
+    line('terminal-icon', sym, color, 1.8);
+    x += 23;
+  }
+  txt('title', x, 0, v.title, color, 15, terminal ? 650 : 550, 'left');
+  if (v.a?.list && v.kind === 'act') {
+    rr('list-bg', -l - 78, -11, 66, 22, 5, p.tint, 'none');
+    txt('list', -l - 45, 0, '清单 ' + v.a.list.length + ' 项', p.blue, 12, 600);
+  }
+  return parts;
+}
+const escapeHTML = (s) =>
+  String(s ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
+  );
+const attrNames = {
+  lineWidth: 'stroke-width',
+  lineDash: 'stroke-dasharray',
+  lineJoin: 'stroke-linejoin',
+  lineCap: 'stroke-linecap',
+  fontFamily: 'font-family',
+  fontWeight: 'font-weight',
+  fontSize: 'font-size',
+  textBaseline: 'dominant-baseline',
+  textAlign: 'text-anchor',
+  radius: 'rx',
+};
+function svgPart({ tag, style }) {
+  const attrs = Object.entries(style)
+    .filter(([k, v]) => k !== 'text' && (!Array.isArray(v) || v.length))
+    .map(([k, v]) => {
+      if (k === 'textAlign') v = { left: 'start', center: 'middle', right: 'end' }[v];
+      if (k === 'textBaseline') v = 'central';
+      return (attrNames[k] || k) + '="' + escapeHTML(v) + '"';
+    })
+    .join(' ');
+  return '<' + tag + ' ' + attrs + '>' + escapeHTML(style.text) + '</' + tag + '>';
+}
+function layers(scene) {
+  const vs = [...scene.items.values()];
+  return [
+    ...vs
+      .filter((v) => v.kind === 'step' && !v.folded)
+      .sort((a, b) => Number(!!a.parent) - Number(!!b.parent)),
+    ...scene.edges,
+    ...vs.filter((v) => v.kind !== 'step' || v.folded),
+  ];
+}
+function svgWorld(scene, p, marks) {
+  return layers(scene)
+    .map((v) => {
+      const b = scene.boxes.get(v.id),
+        tr = b ? ` transform="translate(${b.x} ${b.y})"` : '';
+      return '<g' + tr + '>' + drawing(v, scene, p, marks).map(svgPart).join('') + '</g>';
+    })
+    .join('');
+}
+</script>
+<script>
+const $ = (id) => document.getElementById(id);
+const ico = (n) => '<svg class="icon" aria-hidden="true"><use href="#i-' + n + '"></use></svg>';
+const fmt = (s) => escapeHTML(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+const section = (title, html) =>
+  html ? '<section class="detail-section"><h3>' + escapeHTML(title) + '</h3>' + html + '</section>' : '';
+const para = (s) => (s ? '<p class="para">' + fmt(s) + '</p>' : '');
+const iconFor = {
+  step: 'Layers',
+  act: 'RectangleHorizontal',
+  ask: 'UserRound',
+  decide: 'Diamond',
+  handle: 'CornerDownRight',
+  merge: 'GitMerge',
+  start: 'CirclePlay',
+  end: 'CircleCheck',
+  exit: 'LogOut',
+  fail: 'CircleStop',
+  resource: 'Files',
+  use: 'Paperclip',
+  back: 'Undo2',
+  jump: 'Shuffle',
+  redo: 'RotateCcw',
+  answer: 'UserRound',
+  branch: 'GitFork',
+};
+const button = (id, txt, icon = 'ArrowRight') =>
+  '<button type="button" class="navline" data-inspect="' +
+  escapeHTML(id) +
+  '">' +
+  ico(icon) +
+  fmt(txt) +
+  '</button>';
+const head = (kind, title) =>
+  '<div class="badge">' +
+  ico(iconFor[kind] || 'Route') +
+  escapeHTML(kindName[kind] || kind) +
+  '</div><h2>' +
+  fmt(title) +
+  '</h2>';
+const resFor = (s, i) =>
+  RESOURCES.filter((r) => r.usedBy.some((u) => u.step === s && (i === undefined || u.act === i)));
+const resId = (r) => 'resource:' + RESOURCES.indexOf(r);
+function resourceRefs(s, i) {
+  return resFor(s, i)
+    .map(
+      (r) =>
+        button(resId(r), r.path, 'Paperclip') +
+        para(
+          r.usedBy
+            .filter((u) => u.step === s && (i === undefined || u.act === i))
+            .map((u) => u.how)
+            .join('。'),
+        ) +
+        para(r.status === 'proposed' ? '建议拆分，尚未写进正文' : '正文已引用'),
+    )
+    .join('');
+}
+const checked = new Set();
+function checklist(s, i, list) {
+  if (!list) return '';
+  return section(
+    '清单 · ' + list.length + ' 项',
+    '<p class="muted">逐项核对，全部满足</p><div class="checklist">' +
+      list
+        .map((x, j) => {
+          const id = s + '/' + i + '/' + j;
+          return (
+            '<label><input type="checkbox" data-check="' +
+            id +
+            '" ' +
+            (checked.has(id) ? 'checked' : '') +
+            '><span>' +
+            fmt(x) +
+            '</span></label>'
+          );
+        })
+        .join('') +
+      '</div>',
+  );
+}
+function rules(rows) {
+  return rows?.length
+    ? '<ul class="notes">' +
+        rows
+          .map((r) => '<li>' + fmt(r.t) + (r.why ? '<small>理由 · ' + fmt(r.why) + '</small>' : '') + '</li>')
+          .join('') +
+        '</ul>'
+    : '';
+}
+function routeInfo(s, o) {
+  const dest =
+    o.to && o.to !== 'end'
+      ? '步骤 ' + o.to + ' · ' + STEPS[o.to].title
+      : o.to === 'end'
+        ? '正常结束 · 交付目标 skill'
+        : kindName[o.kind];
+  const id = o.to && o.to !== 'end' ? comboId(o.to) : termId(s, o);
+  return button(id, o.tag + ' → ' + dest, iconFor[o.kind] || 'ArrowRight') + para(o.when) + para(o.res);
+}
+function branchText(v) {
+  if (!v.b) return '';
+  const text = (v.chain || [v.b]).map((b) => b.when).join(' → ');
+  return (
+    section('分支条件', para(text)) +
+    section('分支处理', para(v.b.then)) +
+    section('等待用户', para(v.b.ask)) +
+    section('收到回复或处理完成后', para(v.b.goText))
+  );
+}
+function outline() {
+  return (
+    '<div class="idx">' +
+    stepIds
+      .map(
+        (s) =>
+          '<button class="' +
+          (parentStep[s] ? 'nested' : '') +
+          '" data-inspect="' +
+          comboId(s) +
+          '"><span class="index-label">' +
+          s +
+          '</span><span>' +
+          fmt(STEPS[s].title) +
+          '</span>' +
+          ico('ChevronRight') +
+          '</button>',
+      )
+      .join('') +
+    '</div>'
+  );
+}
+function stepLink(s) {
+  return s ? section('所属步骤', button(comboId(s), '步骤 ' + s + ' · ' + STEPS[s].title, 'Layers')) : '';
+}
+function inspector(v) {
+  if (!v)
+    return (
+      '<div class="badge">' +
+      ico('Workflow') +
+      '流程概览</div><h2>从请求到交付</h2>' +
+      para('先明确需求，再确认流程图，最后编写并检查 SKILL.md。') +
+      section('步骤索引', outline()) +
+      section('审阅方式', para('点击步骤、动作或连线查看原文。展开步骤可查看内部顺序与互斥分支。'))
+    );
+  if (v.kind === 'step') {
+    const s = STEPS[v.s],
+      folded = collapsed.has(v.s);
+    const actions = s.acts
+      .map((a, i) =>
+        button(
+          actionId(v.s, i),
+          numberMark(i) + ' ' + label(v.s, 'acts', i, a.t || a.ask),
+          a.ask ? 'UserRound' : 'ArrowDown',
+        ),
+      )
+      .join('');
+    return (
+      head('step', v.title) +
+      '<div class="detail-actions"><button class="btn outline" data-fold="' +
+      v.s +
+      '">' +
+      ico(folded ? 'UnfoldVertical' : 'FoldVertical') +
+      (folded ? '展开此步骤' : '折叠此步骤') +
+      '</button></div>' +
+      section('输入', para(s.input)) +
+      section('产出', para(s.out)) +
+      section('执行顺序', actions) +
+      section(
+        '子步骤',
+        (s.kids || [])
+          .map((k) => button(comboId(k), '步骤 ' + k + ' · ' + STEPS[k].title, 'Layers'))
+          .join(''),
+      ) +
+      section('约束 · ' + (s.rules?.length || 0), rules(s.rules)) +
+      section('结果与去向', s.outcomes.map((o) => routeInfo(v.s, o)).join('')) +
+      section('引用的资源', resourceRefs(v.s)) +
+      section(
+        '步骤原文',
+        '<details><summary>查看完整正文</summary><p class="raw">' +
+          fmt(stepText(v.s, v.parent ? 4 : 3)) +
+          '</p></details>',
+      )
+    );
+  }
+  if (v.points) {
+    const all = v.members || [v],
+      a = scene.items.get(v.from),
+      b = scene.items.get(v.to);
+    let html =
+      head(v.kind, v.title) +
+      section('连线', button(a.id, a.title, iconFor[a.kind]) + button(b.id, b.title, iconFor[b.kind]));
+    if (v.kind === 'use')
+      return (
+        html +
+        section('资源文件', para(v.r.path)) +
+        section(
+          '引用位置',
+          all
+            .map(
+              (e) =>
+                button(
+                  actionId(e.s, e.i),
+                  '步骤 ' + e.s + ' · ' + numberMark(e.i) + ' ' + label(e.s, 'acts', e.i, ''),
+                ) + para(e.u.how),
+            )
+            .join(''),
+        ) +
+        section('资源状态', para(v.r.status === 'proposed' ? '建议拆分，尚未写进正文' : '正文已引用'))
+      );
+    for (const e of all) {
+      html += section('动作原句', para(e.a?.t || e.a?.ask)) + branchText(e);
+      if (e.o) html += section(e.defaultRoute ? '动作完成后的默认去向' : '结果与去向', routeInfo(e.s, e.o));
+      else if (e.redo) {
+        const target = model.items.get(e.to);
+        html += section(
+          '重做位置',
+          button(target.id, numberMark(target.i) + ' ' + target.title, 'RotateCcw'),
+        );
+      } else if (!e.b)
+        html += section(
+          '去向说明',
+          para(
+            e.entry
+              ? '从此步骤的第一个动作开始执行。'
+              : e.to === 'step:1'
+                ? TERMS.start.sub
+                : '完成后执行目标元素。',
+          ),
+        );
+    }
+    return html;
+  }
+  if (v.kind === 'resource') {
+    const r = v.r;
+    return (
+      head('resource', r.title) +
+      para(r.path) +
+      section('状态', para(r.status === 'proposed' ? '建议拆分，尚未写进正文' : '正文已引用')) +
+      section('用途', para(r.purpose)) +
+      section(
+        '内容',
+        '<ul class="notes">' + r.outline.map((x) => '<li>' + fmt(x) + '</li>').join('') + '</ul>',
+      ) +
+      section(
+        '引用此资源的动作',
+        r.usedBy
+          .map(
+            (u) =>
+              button(
+                actionId(u.step, u.act),
+                '步骤 ' + u.step + ' · ' + numberMark(u.act) + ' ' + label(u.step, 'acts', u.act, ''),
+              ) + para(u.how),
+          )
+          .join(''),
+      )
+    );
+  }
+  if (v.kind === 'start' || v.kind === 'end' || v.o) {
+    const term = TERMS[v.id];
+    return (
+      head(v.kind, term?.title || v.title) +
+      para(term?.sub || v.o?.res) +
+      stepLink(v.s) +
+      section(
+        v.kind === 'start' ? '去向' : '进入此终点的结果',
+        model.links
+          .filter((e) => (v.kind === 'start' ? e.from === v.id : e.to === v.id))
+          .map((e) => button(e.id, e.o?.tag || e.title, 'Route') + para(e.o?.res))
+          .join(''),
+      )
+    );
+  }
+  if (v.kind === 'merge')
+    return (
+      head('merge', '分支汇合') +
+      para('完成任一分支后，从这里进入本步骤的默认去向。') +
+      section(
+        '默认去向',
+        model.links
+          .filter((e) => e.from === v.id)
+          .map((e) => routeInfo(e.s, e.o))
+          .join(''),
+      ) +
+      stepLink(v.s)
+    );
+  const a = v.a;
+  const branches =
+    v.kind === 'decide' ? v.b?.br || a.br : v.kind === 'ask' ? v.b?.ans || a.ans : kidsOf(v.b || a);
+  return (
+    head(v.kind, (v.number !== undefined ? numberMark(v.number) + ' ' : '') + v.title) +
+    section('动作原句', para(a.t || a.ask)) +
+    branchText(v) +
+    section(
+      v.kind === 'ask' ? '用户回复 · 择一' : '条件分支 · 择一',
+      branches ? '<p class="raw">' + fmt(branchLines(v.s, branches, '')) + '</p>' : '',
+    ) +
+    checklist(v.s, v.i, a.list) +
+    section(
+      '后续去向',
+      model.links
+        .filter((e) => e.from === v.id)
+        .map((e) => button(e.id, e.title + ' → ' + model.items.get(e.to).title, 'Route'))
+        .join(''),
+    ) +
+    section('引用的资源', resourceRefs(v.s, v.i)) +
+    stepLink(v.s)
+  );
+}
+function renderInspector(v, reset = true) {
+  $('detail').innerHTML = inspector(v);
+  if (reset) $('detail').scrollTop = 0;
+}
+function renderLegend(p) {
+  const samples = [
+    ['步骤容器', '', p.rim, p.group],
+    ['顺序动作 ①', '', p.act, p.paper],
+    ['互斥判断', 'diamond', p.decLine, p.decBg],
+    ['等待用户', '', p.askLine, p.askBg],
+    ['分支处理', '', p.decLine, p.paper],
+    ['分支汇合', 'dot', p.decision, p.decLine],
+    ['资源', '', p.res, p.resBg],
+    ['开始', 'pill', p.blue, p.tint],
+    ['交付', 'pill', p.end, p.endBg],
+    ['提前结束', 'pill', p.exit, p.exitBg],
+    ['终止', 'pill', p.fail, p.failBg],
+    ['继续 / 子步骤', 'wire solid', p.line],
+    ['回退 / 重做', 'wire', p.back],
+    ['转到其他步骤', 'wire', p.jump],
+    ['引用资源', 'wire', p.res],
+  ];
+  $('legend').innerHTML = samples
+    .map(
+      ([title, style, c, f]) =>
+        '<span><i class="sample ' +
+        style +
+        '" style="--c:' +
+        c +
+        ';--f:' +
+        (f || 'transparent') +
+        '"></i>' +
+        title +
+        '</span>',
+    )
+    .join('');
+}
+</script>
+<script>
+const collapsed = new Set(stepIds);
+let showResources = false,
+  scene,
+  selection = null,
+  caseId = '',
+  caseIndex = 0,
+  graph = null,
+  engine = 'loading';
+let frame = 0,
+  painting = false,
+  paintQueued = false,
+  shownFrame = -1,
+  g6Parts = new Map();
+let cam = { x: 0, y: 0, z: 1 },
+  miniBounds;
+const paletteNow = () => palette[document.documentElement.dataset.theme];
+function translateCase(key) {
+  if (!key.includes('/')) return model.items.get(comboId(key));
+  const [s, value] = key.split('/'),
+    [tag, at] = value.split('@');
+  const matches = model.links.filter((e) => e.s === s && e.o?.tag === tag);
+  return at === undefined
+    ? matches[0]
+    : matches.find((e) => e.path?.split('.').length === 2 && e.path.endsWith('.' + at));
+}
+const sceneEdge = (id) => scene.edges.find((e) => e.members.some((m) => m.id === id));
+function currentSelection() {
+  if (!selection) return null;
+  if (model.items.has(selection)) return scene.items.get(scene.representative(selection)) || null;
+  return sceneEdge(selection);
+}
+function caseMarks() {
+  const marks = { current: new Set(), visited: new Set(), walk: !!caseId, selected: currentSelection()?.id };
+  if (!caseId) return marks;
+  function add(m, set) {
+    if (!m) return;
+    if (m.from) {
+      const real = sceneEdge(m.id);
+      if (!real) return;
+      set.add(real.id);
+      set.add(real.from);
+      set.add(real.to);
+    } else set.add(scene.representative(m.id));
+  }
+  const path = SCENARIOS[caseId].path;
+  for (let i = 0; i <= caseIndex; i++) {
+    const m = translateCase(path[i][0]),
+      set = i === caseIndex ? marks.current : marks.visited;
+    add(m, set);
+    if (i === 0) {
+      add(model.links[0], marks.visited);
+      continue;
+    }
+    const prev = translateCase(path[i - 1][0]);
+    if (prev?.kind === 'step' && m?.kind === 'step')
+      add(
+        model.links.find((e) => e.s === prev.s && e.o?.to === m.s),
+        set,
+      );
+  }
+  return marks;
+}
+function rebuild() {
+  scene = route(layout(project(collapsed, showResources)));
+}
+function reveal(s, include) {
+  if (include && s) collapsed.delete(s);
+  for (let p = parentStep[s]; p; p = parentStep[p]) collapsed.delete(p);
+}
+function setEngine(name) {
+  engine = name;
+  const text = {
+    loading: '正在载入 G6',
+    g6: 'AntV G6 5.1.1',
+    offline: '离线矢量图 · G6 未载入',
+    error: '矢量图 · G6 渲染失败',
+  };
+  $('engine').innerHTML = ico('Workflow') + text[name];
+}
+function queueGraph() {
+  if (!graph) return;
+  paintQueued = true;
+  if (!painting) requestAnimationFrame(flushGraph);
+}
+async function flushGraph() {
+  if (painting || !graph) return;
+  painting = true;
+  try {
+    while (paintQueued && graph) {
+      paintQueued = false;
+      const rev = frame,
+        camera = { ...cam },
+        w = $('surface').clientWidth,
+        h = $('surface').clientHeight;
+      if (!w || !h) break;
+      if (rev !== shownFrame) {
+        const p = paletteNow(),
+          marks = caseMarks(),
+          s = scene;
+        g6Parts = new Map(layers(s).map((v) => [v.id, drawing(v, s, p, marks)]));
+        const data = { nodes: [], edges: [], combos: [] };
+        for (const v of layers(s)) {
+          const b = s.boxes.get(v.id),
+            style = {
+              diagramId: v.id,
+              diagramRevision: rev,
+              zIndex: v.points ? 3 : v.kind === 'step' && !v.folded ? (v.parent ? 1 : 0) : 4,
+            };
+          if (v.points) data.edges.push({ id: v.id, source: v.from, target: v.to, style });
+          else {
+            Object.assign(style, {
+              x: b.x,
+              y: b.y,
+              size: [b.w, b.h],
+              collapsedSize: [b.w, b.h],
+              collapsedMarker: false,
+            });
+            const d = { id: v.id, style };
+            if (v.kind === 'step') {
+              if (v.parent) d.combo = comboId(v.parent);
+              style.collapsed = v.folded;
+              data.combos.push(d);
+            } else {
+              if (v.s && !v.o) d.combo = comboId(v.s);
+              data.nodes.push(d);
+            }
+          }
+        }
+        graph.setData(data);
+        await graph.render();
+        shownFrame = rev;
+      }
+      if (Math.abs(graph.getZoom() - camera.z) > 1e-6) await graph.zoomTo(camera.z, false, [0, 0]);
+      const origin = graph.getViewportByCanvas([0, 0]),
+        dx = camera.x - origin[0],
+        dy = camera.y - origin[1];
+      if (Math.abs(dx) + Math.abs(dy) > 0.005) await graph.translateBy([dx, dy], false);
+      $('fallback').setAttribute('hidden', '');
+      if (engine !== 'g6') setEngine('g6');
+    }
+  } catch (error) {
+    // Keep the same inspectable graph if the graphics backend is unavailable.
+    const broken = graph;
+    graph = null;
+    try {
+      broken?.destroy();
+    } catch {}
+    $('fallback').removeAttribute('hidden');
+    setEngine('error');
+    $('engine').title = String(error);
+    paint();
+  } finally {
+    painting = false;
+    if (paintQueued && graph) queueGraph();
+  }
+}
+function initG6() {
+  const g = window.G6;
+  if (!g) {
+    setEngine('offline');
+    return;
+  }
+  function drawParts(element, a, container) {
+    const parts = g6Parts.get(a.diagramId) || [],
+      keep = new Set(parts.map((p) => p.key));
+    for (const key of element.diagramKeys || [])
+      if (!keep.has(key)) element.upsert(key, 'rect', false, container);
+    for (const p of parts) element.upsert(p.key, p.tag, p.style, container);
+    element.diagramKeys = keep;
+  }
+  class SkillNode extends g.Rect {
+    render(a = this.attributes, c = this) {
+      drawParts(this, a, c);
+    }
+  }
+  class StepCombo extends g.RectCombo {
+    getComboPosition(a) {
+      return [a.x || 0, a.y || 0, 0];
+    }
+    getKeySize(a) {
+      return [a.size[0], a.size[1], 0];
+    }
+    render(a = this.attributes, c = this) {
+      drawParts(this, a, c);
+    }
+  }
+  class SkillEdge extends g.Polyline {
+    render(a = this.attributes, c = this) {
+      drawParts(this, a, c);
+    }
+  }
+  try {
+    g.register(g.ExtensionCategory.NODE, 'skill-action', SkillNode);
+    g.register(g.ExtensionCategory.COMBO, 'skill-step', StepCombo);
+    g.register(g.ExtensionCategory.EDGE, 'skill-route', SkillEdge);
+    graph = new g.Graph({
+      container: $('canvas'),
+      width: Math.max(1, $('stage').clientWidth),
+      height: Math.max(1, $('stage').clientHeight),
+      animation: false,
+      zoomRange: [0.03, 3],
+      padding: 0,
+      node: { type: 'skill-action' },
+      combo: { type: 'skill-step' },
+      edge: { type: 'skill-route' },
+      behaviors: [],
+    });
+    queueGraph();
+  } catch (error) {
+    graph = null;
+    setEngine('error');
+    $('engine').title = String(error);
+  }
+}
+function minimap() {
+  const p = paletteNow(),
+    b = scene.extent,
+    pad = 18;
+  miniBounds = rect(b.x, b.y, b.w + pad * 2, b.h + pad * 2);
+  $('mini').setAttribute(
+    'viewBox',
+    [left(miniBounds), topY(miniBounds), miniBounds.w, miniBounds.h].join(' '),
+  );
+  $('mini').innerHTML =
+    layers(scene)
+      .map((v) => {
+        if (v.points)
+          return (
+            '<polyline fill="none" stroke="' +
+            (p[v.kind] || p.line) +
+            '" stroke-width="4" points="' +
+            v.points.map((p) => p.join(',')).join(' ') +
+            '"/>'
+          );
+        const r = scene.boxes.get(v.id);
+        return (
+          '<rect x="' +
+          left(r) +
+          '" y="' +
+          topY(r) +
+          '" width="' +
+          r.w +
+          '" height="' +
+          r.h +
+          '" rx="7" fill="' +
+          (v.kind === 'step' ? (v.folded ? p.tint : p.group) : p.paper) +
+          '" stroke="' +
+          (p[v.kind] || p.rim) +
+          '" stroke-width="3"/>'
+        );
+      })
+      .join('') +
+    '<rect id="mini-viewport" fill="' +
+    p.blue +
+    '" fill-opacity=".09" stroke="' +
+    p.blue +
+    '" vector-effect="non-scaling-stroke" stroke-width="1"/>';
+}
+function updateCamera() {
+  const { x, y, z } = cam;
+  $('world').setAttribute('transform', 'translate(' + x + ' ' + y + ') scale(' + z + ')');
+  $('percent').textContent = Math.round(z * 100) + '%';
+  const m = $('mini-viewport');
+  if (m) {
+    const l = Math.max(left(miniBounds), -x / z),
+      r = Math.min(right(miniBounds), ($('surface').clientWidth - x) / z);
+    const t = Math.max(topY(miniBounds), -y / z),
+      b = Math.min(bottom(miniBounds), ($('surface').clientHeight - y) / z);
+    for (const [k, v] of Object.entries({
+      x: l,
+      y: t,
+      width: Math.max(0, r - l),
+      height: Math.max(0, b - t),
+    }))
+      m.setAttribute(k, v);
+  }
+  queueGraph();
+}
+function paint() {
+  frame++;
+  if (!graph || engine !== 'g6') $('world').innerHTML = svgWorld(scene, paletteNow(), caseMarks());
+  minimap();
+  renderLegend(paletteNow());
+  updateCamera();
+  $('resources').setAttribute('aria-checked', String(showResources));
+  $('expand').disabled = collapsed.size === 0;
+  $('collapse').disabled = collapsed.size === stepIds.length;
+}
+function fit() {
+  const w = $('surface').clientWidth,
+    h = $('surface').clientHeight,
+    b = scene.extent;
+  if (!w || !h) return;
+  const z = Math.max(0.03, Math.min(1.2, (w - 48) / b.w, (h - 74) / b.h));
+  const center = Math.abs(b.x) * z + (b.w * z) / 2 < w / 2 - 25 ? 0 : b.x;
+  cam = { z, x: w / 2 - center * z, y: (h - 12) / 2 - b.y * z };
+  updateCamera();
+}
+function focusItem(v) {
+  if (!v) return;
+  const b = v.labelBox || scene.boxes.get(v.id);
+  if (!b) return;
+  const w = $('surface').clientWidth,
+    h = $('surface').clientHeight;
+  const z = Math.max(0.46, Math.min(1.12, (w - 55) / Math.min(b.w, 730)));
+  cam = { z, x: w / 2 - b.x * z, y: b.h * z > h - 110 ? 76 - topY(b) * z : h * 0.45 - b.y * z };
+  updateCamera();
+}
+function refresh(focus = null, fitAll = false) {
+  rebuild();
+  if (selection && !currentSelection()) selection = null;
+  paint();
+  renderInspector(currentSelection());
+  if (fitAll) fit();
+  else if (focus) focusItem(scene.items.get(focus) || sceneEdge(focus));
+}
+function inspect(id, navigate = false) {
+  let m = model.items.get(id) || model.links.find((e) => e.id === id);
+  if (!m) return;
+  if (navigate) {
+    if (m.kind === 'resource') {
+      showResources = true;
+      m.r.usedBy.forEach((u) => reveal(u.step, true));
+    }
+    if (m.from) {
+      if (m.kind === 'use') showResources = true;
+      [model.items.get(m.from), model.items.get(m.to)].forEach((v) => {
+        if (v.s && !v.o) reveal(v.s, v.kind !== 'step');
+      });
+    } else if (m.s && !m.o) reveal(m.s, m.kind !== 'step');
+    rebuild();
+  }
+  selection = id;
+  let v = currentSelection();
+  paint();
+  renderInspector(v);
+  if (navigate) focusItem(v);
+}
+function fold(s) {
+  if (collapsed.has(s)) collapsed.delete(s);
+  else collapsed.add(s);
+  selection = comboId(s);
+  refresh(selection);
+}
+function chooseCase(id, index = 0) {
+  caseId = id;
+  caseIndex = index;
+  $('scenario').value = id;
+  $('walk').hidden = !id;
+  if (!id) {
+    selection = null;
+    paint();
+    renderInspector(null);
+    return;
+  }
+  const sc = SCENARIOS[id],
+    [key, note] = sc.path[index],
+    m = translateCase(key);
+  if (m.from) {
+    const a = model.items.get(m.from),
+      b = model.items.get(m.to);
+    if (a.s) reveal(a.s, true);
+    if (b.s && !b.o) reveal(b.s, false);
+  } else reveal(m.s, false);
+  selection = m.id;
+  $('case-name').textContent = '本例 · ' + sc.name;
+  $('case-request').textContent = sc.req;
+  $('case-note').textContent = note;
+  $('case-index').textContent = index + 1 + ' / ' + sc.path.length;
+  $('prev').disabled = index === 0;
+  $('next').disabled = index + 1 === sc.path.length;
+  refresh(m.id);
+  $('surface').focus({ preventScroll: true });
+}
+function advance(delta) {
+  if (caseId) {
+    const i = Math.max(0, Math.min(SCENARIOS[caseId].path.length - 1, caseIndex + delta));
+    if (i !== caseIndex) chooseCase(caseId, i);
+  }
+}
+function zoom(factor, origin) {
+  const [x, y] = origin || [$('surface').clientWidth / 2, $('surface').clientHeight / 2],
+    z = Math.min(3, Math.max(0.03, cam.z * factor)),
+    r = z / cam.z;
+  cam = { z, x: x - (x - cam.x) * r, y: y - (y - cam.y) * r };
+  updateCamera();
+}
+function switchView(text) {
+  $('textview').hidden = !text;
+  $('work').hidden = text;
+  $('graph-tab').setAttribute('aria-selected', String(!text));
+  $('text-tab').setAttribute('aria-selected', String(text));
+  if (!text) requestAnimationFrame(updateCamera);
+}
+function hit(x, y) {
+  const inside = (b) => x >= left(b) && x <= right(b) && y >= topY(b) && y <= bottom(b);
+  const els = layers(scene).reverse();
+  for (const v of els) {
+    if (!v.points && inside(scene.boxes.get(v.id))) return v;
+    if (v.points && inside(v.labelBox)) return v;
+    if (
+      v.points &&
+      v.points.slice(1).some((b, i) => {
+        const a = v.points[i],
+          tol = Math.min(12, 5 / cam.z);
+        return inside(
+          rect(
+            (a[0] + b[0]) / 2,
+            (a[1] + b[1]) / 2,
+            Math.abs(b[0] - a[0]) + 2 * tol,
+            Math.abs(b[1] - a[1]) + 2 * tol,
+          ),
+        );
+      })
+    )
+      return v;
+  }
+}
+function bindUI() {
+  const surface = $('surface');
+  function pixel(e) {
+    const r = surface.getBoundingClientRect();
+    return [e.clientX - r.left, e.clientY - r.top];
+  }
+  function world(e) {
+    const [x, y] = pixel(e);
+    return [(x - cam.x) / cam.z, (y - cam.y) / cam.z];
+  }
+  let drag = null,
+    lastToggle = 0;
+  surface.onpointerdown = (e) => {
+    if (e.button !== 0) return;
+    surface.focus({ preventScroll: true });
+    drag = { x: e.clientX, y: e.clientY, cam: { ...cam }, moved: false };
+    surface.setPointerCapture(e.pointerId);
+  };
+  surface.onpointermove = (e) => {
+    if (!drag) {
+      surface.style.cursor = hit(...world(e)) ? 'pointer' : 'grab';
+      return;
+    }
+    const dx = e.clientX - drag.x,
+      dy = e.clientY - drag.y;
+    if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
+    if (drag.moved) {
+      surface.style.cursor = 'grabbing';
+      cam = { ...drag.cam, x: drag.cam.x + dx, y: drag.cam.y + dy };
+      updateCamera();
+    }
+  };
+  surface.onpointercancel = () => {
+    drag = null;
+    surface.style.cursor = 'grab';
+  };
+  surface.onpointerup = (e) => {
+    const clicked = drag && !drag.moved;
+    drag = null;
+    surface.style.cursor = 'grab';
+    if (!clicked) return;
+    const [x, y] = world(e),
+      v = hit(x, y);
+    if (!v) {
+      selection = null;
+      paint();
+      renderInspector(null);
+      return;
+    }
+    const b = scene.boxes.get(v.id);
+    if (v.kind === 'step' && x < left(b) + 41 && Math.abs(y - (v.folded ? b.y : topY(b) + 24)) < 16) {
+      lastToggle = performance.now();
+      fold(v.s);
+    } else inspect(v.id);
+  };
+  surface.ondblclick = (e) => {
+    const v = hit(...world(e));
+    if (v?.kind === 'step' && performance.now() - lastToggle > 350) fold(v.s);
+  };
+  surface.addEventListener(
+    'wheel',
+    (e) => {
+      e.preventDefault();
+      zoom(
+        Math.exp(-Math.max(-160, Math.min(160, e.deltaY * (e.deltaMode === 1 ? 14 : 1))) * 0.002),
+        pixel(e),
+      );
+    },
+    { passive: false },
+  );
+  const map = $('mini');
+  function mapPan(e) {
+    const c = map.getScreenCTM();
+    if (!c) return;
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(c.inverse());
+    cam = { ...cam, x: surface.clientWidth / 2 - p.x * cam.z, y: surface.clientHeight / 2 - p.y * cam.z };
+    updateCamera();
+  }
+  map.onpointerdown = (e) => {
+    map.setPointerCapture(e.pointerId);
+    mapPan(e);
+  };
+  map.onpointermove = (e) => {
+    if (map.hasPointerCapture(e.pointerId)) mapPan(e);
+  };
+  $('graph-tab').onclick = () => switchView(false);
+  $('text-tab').onclick = () => switchView(true);
+  $('plus').onclick = () => zoom(1.25);
+  $('minus').onclick = () => zoom(0.8);
+  $('fit').onclick = fit;
+  $('collapse').onclick = () => {
+    stepIds.forEach((s) => collapsed.add(s));
+    showResources = false;
+    refresh(null, true);
+  };
+  $('expand').onclick = () => {
+    collapsed.clear();
+    refresh(null, true);
+  };
+  $('resources').onclick = () => {
+    showResources = !showResources;
+    if (showResources) RESOURCES.forEach((r) => r.usedBy.forEach((u) => reveal(u.step, true)));
+    refresh(null, true);
+  };
+  $('home').onclick = () => {
+    selection = null;
+    paint();
+    renderInspector(null);
+  };
+  $('detail').onclick = (e) => {
+    const el = e.target.closest('[data-inspect],[data-fold]');
+    if (el?.dataset.fold) fold(el.dataset.fold);
+    else if (el) inspect(el.dataset.inspect, true);
+  };
+  $('detail').onchange = (e) => {
+    if (e.target.dataset.check) {
+      if (e.target.checked) checked.add(e.target.dataset.check);
+      else checked.delete(e.target.dataset.check);
+    }
+  };
+  $('scenario').onchange = (e) => chooseCase(e.target.value);
+  $('stop').onclick = () => chooseCase('');
+  $('prev').onclick = () => advance(-1);
+  $('next').onclick = () => advance(1);
+  document.addEventListener('keydown', (e) => {
+    if (
+      !caseId ||
+      $('work').hidden ||
+      e.altKey ||
+      e.ctrlKey ||
+      e.metaKey ||
+      e.target.matches?.('select:focus,input,textarea')
+    )
+      return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      advance(e.key === 'ArrowLeft' ? -1 : 1);
+    }
+  });
+  $('theme').value = theme;
+  $('theme').onchange = (e) => {
+    theme = e.target.value;
+    try {
+      localStorage.setItem('create-skill-g6-theme', theme);
+    } catch {}
+    applyTheme();
+    paint();
+  };
+  colorMode.addEventListener('change', () => {
+    if (theme === 'system') {
+      applyTheme();
+      paint();
+    }
+  });
+  let lastW = 0,
+    lastH = 0;
+  new ResizeObserver(() => {
+    const w = surface.clientWidth,
+      h = surface.clientHeight;
+    if (!w || !h || (w === lastW && h === lastH)) return;
+    if (graph) graph.setSize(w, h);
+    if (lastW && lastH) {
+      cam.x += (w - lastW) / 2;
+      cam.y += (h - lastH) / 2;
+      updateCamera();
+    } else fit();
+    lastW = w;
+    lastH = h;
+  }).observe(surface);
+}
+function startPage() {
+  document.querySelectorAll('[data-icon]').forEach((el) => {
+    if (el.tagName === 'I') el.outerHTML = ico(el.dataset.icon);
+    else el.innerHTML = ico(el.dataset.icon);
+  });
+  $('desc').textContent = FLOW.description;
+  const main = ORDER.filter((s) => STEPS[s]).length;
+  $('metrics').innerHTML =
+    '<span><b>' +
+    main +
+    '</b> 主步骤</span><span><b>' +
+    (stepIds.length - main) +
+    '</b> 子步骤</span><span><b>' +
+    Object.keys(SCENARIOS).length +
+    '</b> 走查示例</span>';
+  for (const [k, s] of Object.entries(SCENARIOS)) $('scenario').add(new Option(s.name, k));
+  // The Markdown file has exactly one final LF outside the exported body.
+  $('text').textContent = skillText() + '\n';
+  rebuild();
+  paint();
+  fit();
+  renderInspector(null);
+  bindUI();
+  setEngine('loading');
+  const cdn = document.createElement('script');
+  cdn.src = 'https://cdnjs.cloudflare.com/ajax/libs/antv-g6/5.1.1/g6.min.js';
+  cdn.onload = initG6;
+  cdn.onerror = () => setEngine('offline');
+  document.head.appendChild(cdn);
+}
+startPage();
+</script>
+  </body>
+</html>

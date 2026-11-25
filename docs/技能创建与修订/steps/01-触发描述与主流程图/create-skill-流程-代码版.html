@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>create-skill · 执行全图</title>
+<style>
+:root{color-scheme:light;--bg:#f4f5f0;--paper:#fffefa;--ink:#183c31;--muted:#52675b;--line:#cfdbd1;--green:#18664c;--back:#a94b2d;--wait:#83581c;--exit:#4e6479;font-family:"Instrument Sans","PingFang SC","Microsoft YaHei",sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Instrument Sans","PingFang SC","Microsoft YaHei",sans-serif}header,main,footer{max-width:1450px;margin:auto;padding-inline:clamp(12px,2.2vw,34px)}header{display:flex;gap:15px;justify-content:space-between;align-items:center;padding-block:13px 9px;flex-wrap:wrap}h1{font-size:clamp(22px,2.3vw,35px);letter-spacing:-.05em;line-height:1.2;margin:0}header p{margin:4px 0 0;color:var(--muted);font-size:14px}button,select{font:inherit;color:inherit}button{background:var(--paper);border:1px solid #becdc2;border-radius:6px;padding:5px 10px;cursor:pointer}.tools{display:flex;gap:6px}.tools button{font-size:13px}.tools button:hover,.tools button[aria-pressed=true]{border-color:var(--green);background:#e7f2e8}button:focus-visible,summary:focus-visible{outline:3px solid #5788ab;outline-offset:3px}.legend{display:flex;flex-wrap:wrap;gap:8px 22px;padding:7px 0 10px;color:var(--muted);font-size:13px}.legend span{display:inline-flex;gap:6px;align-items:center}.legend i{width:22px;height:0;border-top:2px solid var(--green)}.legend .b{border-top:2px dashed var(--back)}.legend .a,.legend .x{width:14px;height:11px;border:1px solid #ac883d;background:#fff3d7;border-radius:2px}.legend .x{border-color:#75889b;background:#edf2f6;border-radius:8px}.canvas{margin:0;background:var(--paper);border:1px solid #bdcdc1;border-radius:9px;overflow:hidden}#flow{display:block;width:100%;height:auto;margin:auto}body.fit #flow{max-height:calc(100svh - 132px);min-height:320px}#flow text{font-family:"PingFang SC","Microsoft YaHei",sans-serif}#flow .paper{fill:#fffefa}.sectionrule{stroke:#ccd8cf;stroke-width:1;stroke-dasharray:3 5}.sectionid{fill:#234c3c}.sectionno{fill:white;font-size:13px;font-weight:700}.phasetitle{fill:#163f2e;font-size:21px;font-weight:750}.box{stroke-width:1.5}.step{fill:#f1f8ef;stroke:#629777}.band{fill:#e1eedf}.ask{fill:#fff4d9;stroke:#be9749}.repair{fill:#fff6ed;stroke:#c98d70}.exit,.exitstrip{fill:#edf2f6;stroke:#88a0af}.done{fill:#205d44;stroke:#205d44}.stoptext{font-size:17px;font-weight:650;fill:#334e64}.inverse{fill:white}.exittext{fill:#3b566c;font-size:15px;font-weight:600}.nodetitle{font-size:19px;fill:#17392d;font-weight:700}.body{font-size:15.5px;fill:#324d3f}.sidebody{font-size:15px;fill:#445a4f}.rowhead{font-size:16px;font-weight:620;fill:#233f31}.product{font-size:15px;font-weight:650;fill:#20563f}.notetitle{font-size:16px;font-weight:700;fill:#374f3f}.divider,.note-rule{stroke:#c6d4c8;stroke-width:1.1}.note-rule{stroke-width:2.4}.wire{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.wire.main{stroke:var(--green)}.wire.wait{stroke:#976521}.wire.back{stroke:var(--back);stroke-dasharray:6 4}.wire.exit{stroke:var(--exit)}.edgelabel{font-size:14px;font-weight:650;paint-order:stroke;stroke:var(--paper);stroke-width:5;stroke-linejoin:round;fill:var(--green)}.edgelabel.back{fill:var(--back)}.edgelabel.wait{fill:var(--wait)}.edgelabel.exit{fill:var(--exit)}footer{font-size:13px;color:var(--muted);padding-block:12px 20px}.mobile{display:none}dialog{width:min(800px,94vw);max-height:86svh;border:1px solid #aabfaf;border-radius:9px;padding:0;background:var(--paper);color:var(--ink)}dialog::backdrop{background:#132b2388}dialog header{position:sticky;top:0;background:var(--paper);border-bottom:1px solid var(--line);padding:11px 18px}dialog h2{margin:0;font-size:18px}#source{font-size:15px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;margin:16px 22px 24px;font-family:inherit}details{margin:10px 0}summary{cursor:pointer;font-size:14px;color:var(--green)}.samplebar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;padding-top:9px}.samplebar select{max-width:100%;padding:4px}.samplebar button{font-size:13px}.samplebar p{margin:0}.examples p{margin:5px 0}.examples ol{margin:6px 0;padding-inline-start:24px}.examples li{margin:3px}.examples{padding:5px 10px 9px}.sr{position:absolute;left:-9999px}.walkcurrent{font-weight:750;color:var(--green)}
+@media(max-width:700px){header{align-items:flex-start;padding-top:12px}header p{font-size:13px}.tools button{font-size:12px}.legend{gap:5px 10px;font-size:12px}.canvas.reading #flow{display:none}.canvas.reading .mobile{display:block}.mobile{padding:12px 12px 12px 19px}.mobile h2{font-size:18px;margin:16px 0 6px}.mobile h2:first-child{margin-top:0}.mstep{border-left:2px solid #a1bea9;padding:1px 0 12px 14px;margin-left:3px;position:relative}.mstep:before{content:"";position:absolute;left:-5px;top:13px;border-radius:50%;width:8px;height:8px;background:var(--green)}.mstep h3{font-size:15px;margin:5px 0}.mstep p{font-size:13px;margin:3px 0}.mstep ul{padding-left:15px;margin:4px 0;font-size:13px}.mstep li{margin:3px 0}.mstep b{font-weight:650;color:var(--back)}.mstep .output{color:var(--green);font-weight:650}.mend{padding:8px 13px;background:#205d44;color:white;border-radius:6px;font-size:14px}.mstart{color:var(--green);font-weight:650;font-size:14px}body.fit #flow{max-height:none;min-height:0}#source{margin:12px}footer{padding-top:4px}}
+@page{size:A3 portrait;margin:8mm}@media print{header{padding:0}.tools,footer,.mobile,dialog,.subtitle,details{display:none!important}body{background:white;print-color-adjust:exact;-webkit-print-color-adjust:exact}main{padding:0}.legend{padding:2mm 0}.canvas{border:0}.canvas #flow,body.fit .canvas #flow{display:block!important;width:100%;max-height:365mm;min-height:0}.canvas{break-inside:avoid}}
+</style></head><body><header><div><h1>create-skill 执行全图</h1><p class="subtitle">确定需求 → 用户确认流程图 → 编写并验证 SKILL.md</p></div><div class="tools"><button id="fit" type="button" aria-pressed="false">整图适屏</button><button id="original" type="button">核对原文</button><button id="print" type="button">打印</button></div></header>
+<main><div class="legend" aria-label="图例"><span><i></i>正常执行</span><span><i class="a"></i>等待用户判断</span><span><i class="b"></i>回退或换路</span><span><i class="x"></i>提前结束或暂停</span></div>
+<figure class="canvas" id="canvas"><figcaption class="sr">图 1　从需求、流程设计到编写验证的完整路径</figcaption>
+<svg xmlns="http://www.w3.org/2000/svg" id="flow" viewBox="0 0 1280 1435" role="img" aria-labelledby="svgtitle svgdesc">
+<title id="svgtitle">create-skill 完整流程，从收到请求到交付目标 skill</title><desc id="svgdesc">顺着绿色主线向下。修订与新建并行，在需求核对处汇合。用户确认图后才写正文。橙色虚线连接需要返回或改道的步骤。提前结束和暂停写在对应分支旁。</desc><defs>
+<marker id="arr-main" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.3" markerHeight="5.3" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#18664c"/></marker>
+<marker id="arr-back" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.3" markerHeight="5.3" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#a94b2d"/></marker>
+<marker id="arr-wait" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.3" markerHeight="5.3" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#976521"/></marker>
+<marker id="arr-exit" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.3" markerHeight="5.3" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#4e6479"/></marker>
+</defs>
+<rect x="0" y="0" width="1280" height="1435" rx="0" class="paper"/>
+<path d="M22 657H1258" class="sectionrule"/>
+<path d="M22 1057H1258" class="sectionrule"/>
+<rect x="25" y="25" width="27" height="23" rx="4" class="sectionid"/>
+<text x="38.5" y="41" class="sectionno" text-anchor="middle">01</text>
+<text x="61" y="42" class="phasetitle" text-anchor="start">确定需求</text>
+<text x="61" y="64" class="sidebody" text-anchor="start">先判断该走新建还是修订。</text>
+<rect x="25" y="679" width="27" height="23" rx="4" class="sectionid"/>
+<text x="38.5" y="695" class="sectionno" text-anchor="middle">02</text>
+<text x="61" y="696" class="phasetitle" text-anchor="start">画图与确认</text>
+<text x="61" y="718" class="sidebody" text-anchor="start">交付物是目标 skill 的 flow.html。</text>
+<rect x="25" y="1078" width="27" height="23" rx="4" class="sectionid"/>
+<text x="38.5" y="1094" class="sectionno" text-anchor="middle">03</text>
+<text x="61" y="1095" class="phasetitle" text-anchor="start">写作与验证</text>
+<text x="61" y="1117" class="sidebody" text-anchor="start">写作依据是已确认的流程图。</text>
+<path d="M549 48 V70" class="wire main" marker-end="url(#arr-main)"/>
+<path d="M549 137 V169 H297 V204" class="wire main" marker-end="url(#arr-main)"/>
+<path d="M549 169 H962 V204" class="wire main" marker-end="url(#arr-main)"/>
+<path d="M766 100 H873" class="wire wait" marker-end="url(#arr-wait)"/>
+<path d="M1238 87 H1253 V173 H1168 V204" class="wire main" marker-end="url(#arr-main)"/>
+<path d="M560 340 H702" class="wire back" marker-end="url(#arr-back)"/>
+<path d="M704 287 H561" class="wire back" marker-end="url(#arr-back)"/>
+<path d="M296 483 V508 H549" class="wire main"/>
+<path d="M965 483 V508 H549" class="wire main"/>
+<path d="M549 508 V541" class="wire main" marker-end="url(#arr-main)"/>
+<path d="M766 562 H866" class="wire wait" marker-end="url(#arr-wait)"/>
+<path d="M866 610 H766" class="wire back" marker-end="url(#arr-back)"/>
+<path d="M549 638 V697" class="wire main" marker-end="url(#arr-main)"/>
+<path d="M549 789 V833" class="wire main" marker-end="url(#arr-main)"/>
+<path d="M549 897 V946" class="wire main" marker-end="url(#arr-main)"/>
+<path d="M766 849 H862" class="wire back" marker-end="url(#arr-back)"/>
+<path d="M862 884 H766" class="wire back" marker-end="url(#arr-back)"/>
+<path d="M766 979 H862" class="wire exit" marker-end="url(#arr-exit)"/>
+<path d="M342 961 H320" class="wire back"/>
+<path d="M308 961 H286 V585 H342" class="wire back" marker-end="url(#arr-back)"/>
+<path d="M342 995 H314 V865 H342" class="wire back" marker-end="url(#arr-back)"/>
+<path d="M549 1014 V1091" class="wire main" marker-end="url(#arr-main)"/>
+<path d="M549 1176 V1217" class="wire main" marker-end="url(#arr-main)"/>
+<path d="M766 1234 H853" class="wire back" marker-end="url(#arr-back)"/>
+<path d="M853 1288 H766" class="wire back" marker-end="url(#arr-back)"/>
+<path d="M716 1308 V1331 H1248 V674 H740 V697" class="wire back" marker-end="url(#arr-back)"/>
+<path d="M549 1308 V1373" class="wire main" marker-end="url(#arr-main)"/>
+<g id="n-start" data-node="start">
+<rect x="399" y="12" width="300" height="36" rx="18.0" class="box done"/>
+<text x="549.0" y="36.0" class="stoptext inverse" text-anchor="middle">开始 · 收到创建或修改 skill 的请求</text>
+</g>
+<g id="n-intent" data-node="intent">
+<rect x="342" y="70" width="424" height="67" rx="9" class="box step"/>
+<text x="358" y="97" class="nodetitle" text-anchor="start">1　读取材料，判断请求</text>
+<text x="358" y="121" class="body" text-anchor="start">读请求、相关对话、文档、实例和已有做法。</text>
+</g>
+<g id="n-alternative" data-node="alternative">
+<rect x="873" y="51" width="365" height="97" rx="9" class="box ask"/>
+<text x="887" y="76" class="nodetitle" text-anchor="start">提出替代做法，等待用户选择</text>
+<text x="887" y="100" class="sidebody" text-anchor="start">一次性任务、项目约定、事件自动化或机械校验</text>
+<rect x="886" y="111" width="328" height="26" rx="5" class="exitstrip"/>
+<text x="898" y="130" class="exittext" text-anchor="start">接受建议 → 按更合适的做法处理，本次结束</text>
+</g>
+<text x="818" y="90" class="edgelabel wait" text-anchor="middle">新建不适合</text>
+<text x="335" y="161" class="edgelabel main" text-anchor="middle">点名修订已有 skill</text>
+<text x="790" y="161" class="edgelabel main" text-anchor="middle">适合新建</text>
+<text x="1154" y="164" class="edgelabel main" text-anchor="middle">仍要新建</text>
+<g id="n-rev" data-node="rev">
+<rect x="26" y="204" width="534" height="279" rx="10" class="box step"/>
+<rect x="26" y="204" width="534" height="47" rx="9" class="band"/>
+<text x="43" y="235" class="nodetitle" text-anchor="start">1.1　找到并读懂已有 skill</text>
+<text x="43" y="274" class="rowhead" text-anchor="start">查个人目录、项目目录和已安装插件</text>
+<text x="43" y="294" class="sidebody" text-anchor="start">对不上或候选多个 → 请用户指认，收到回复后重新查找 ↺</text>
+<path d="M43 310h498" class="divider"/>
+<text x="43" y="337" class="rowhead" text-anchor="start">确实不存在 → 询问是否改为新建</text>
+<rect x="43" y="344" width="181" height="25" rx="6" class="exitstrip"/>
+<text x="51" y="362" class="exittext" text-anchor="start">不同意 → 结束本次修订</text>
+<path d="M43 375h498" class="divider"/>
+<text x="43" y="399" class="rowhead" text-anchor="start">找到 → 读正文、引用文件、脚本和已有流程图</text>
+<text x="43" y="420" class="sidebody" text-anchor="start">个人或项目文件直接改。插件更新会覆盖原处改动，请用户选</text>
+<text x="43" y="439" class="sidebody" text-anchor="start">复制到个人目录后改（推荐），或在原处改。</text>
+<text x="43" y="466" class="product" text-anchor="start">产出　待改文件、现状与期望、能复现现状的请求</text>
+</g>
+<g id="n-new" data-node="new">
+<rect x="704" y="204" width="534" height="279" rx="10" class="box step"/>
+<rect x="704" y="204" width="534" height="47" rx="9" class="band"/>
+<text x="721" y="235" class="nodetitle" text-anchor="start">1.2　确定新 skill 的定位</text>
+<text x="721" y="274" class="rowhead" text-anchor="start">查已安装的 skill → 有相近项，列出异同与推荐</text>
+<text x="721" y="299" class="sidebody" text-anchor="start">请用户选择。选修订转入左边的 1.1，选新建则继续。</text>
+<path d="M721 310h498" class="divider"/>
+<text x="721" y="337" class="rowhead" text-anchor="start">没有相近项，或用户选择新建 → 确定存放位置</text>
+<text x="721" y="360" class="sidebody" text-anchor="start">优先用用户指定的位置，其次按已有的项目约定。</text>
+<path d="M721 375h498" class="divider"/>
+<text x="721" y="399" class="rowhead" text-anchor="start">未指定位置、项目也无约定 → 请用户选目录</text>
+<text x="721" y="423" class="sidebody" text-anchor="start">只在本项目用可放项目目录，跨项目用可放个人目录。</text>
+<text x="721" y="466" class="product" text-anchor="start">产出　确认要新建，以及目标存放位置</text>
+</g>
+<text x="631" y="280" class="edgelabel back" text-anchor="middle">选修订 · 到 1.1</text>
+<text x="631" y="333" class="edgelabel back" text-anchor="middle">同意新建 · 到 1.2</text>
+<text x="364" y="504" class="edgelabel main" text-anchor="middle">修订依据就绪</text>
+<text x="903" y="504" class="edgelabel main" text-anchor="middle">新建定位已定</text>
+<g id="n-needs" data-node="needs">
+<rect x="342" y="541" width="424" height="97" rx="9" class="box step"/>
+<text x="358" y="568" class="nodetitle" text-anchor="start">1.3　核对需求是否足以决定流程</text>
+<text x="358" y="592" class="body" text-anchor="start">先从材料补全。只剩局部细节时，自行决定并记录。</text>
+<text x="358" y="611" class="body" text-anchor="start">产出　需求摘要、具体实例和局部取舍。</text>
+</g>
+<path d="M28 542v84" class="note-rule"/>
+<text x="40" y="555" class="notetitle" text-anchor="start">核对六项</text>
+<text x="40" y="579" class="sidebody" text-anchor="start">问题和常见误做法 · 触发边界</text>
+<text x="40" y="598" class="sidebody" text-anchor="start">输入与完成条件 · 真实实例</text>
+<text x="40" y="617" class="sidebody" text-anchor="start">工具与约束 · 用户参与位置</text>
+<g id="n-clarify" data-node="clarify">
+<rect x="866" y="540" width="372" height="91" rx="9" class="box ask"/>
+<text x="882" y="567" class="nodetitle" text-anchor="start">集中向用户提问</text>
+<text x="882" y="591" class="body" text-anchor="start">说明理解，列 2～3 个选项及推荐。</text>
+<text x="882" y="610" class="body" text-anchor="start">缺实例时先拟一个，请用户确认。</text>
+</g>
+<text x="815" y="554" class="edgelabel wait" text-anchor="middle">关键信息缺失</text>
+<text x="816" y="602" class="edgelabel back" text-anchor="middle">收到回复</text>
+<text x="641" y="652" class="edgelabel main" text-anchor="middle">关键需求已明确</text>
+<g id="n-draft" data-node="draft">
+<rect x="342" y="697" width="424" height="92" rx="9" class="box step"/>
+<text x="358" y="724" class="nodetitle" text-anchor="start">2　生成或更新目标 skill 的流程图</text>
+<text x="358" y="748" class="body" text-anchor="start">新建从实例推演主线，再补一两个不同场景。</text>
+<text x="358" y="767" class="body" text-anchor="start">修订只改受影响的路径。没有旧图，先从原文还原。</text>
+</g>
+<path d="M28 737v65" class="note-rule"/>
+<text x="40" y="750" class="notetitle" text-anchor="start">写入图顶</text>
+<text x="40" y="774" class="sidebody" text-anchor="start">名称、触发描述、一句话用途</text>
+<text x="40" y="793" class="sidebody" text-anchor="start">以及步骤 1 的需求摘要。</text>
+<path d="M28 817v84" class="note-rule"/>
+<text x="40" y="830" class="notetitle" text-anchor="start">命名与触发</text>
+<text x="40" y="854" class="sidebody" text-anchor="start">动词原形加对象，如 fix-bug。</text>
+<text x="40" y="873" class="sidebody" text-anchor="start">用第三人称写适用场景，</text>
+<text x="40" y="892" class="sidebody" text-anchor="start">与已有相近 skill 区分。</text>
+<path d="M827 702v84" class="note-rule"/>
+<text x="839" y="715" class="notetitle" text-anchor="start">补全每个关键判断</text>
+<text x="839" y="739" class="sidebody" text-anchor="start">输入缺失、执行失败、用户回应、循环如何退出。</text>
+<text x="839" y="758" class="sidebody" text-anchor="start">可能反复时写上限与超限处理。异常写清告知与保留。</text>
+<text x="839" y="777" class="sidebody" text-anchor="start">方向性取舍询问用户，局部细节自行决定并标明。</text>
+<g id="n-mapcheck" data-node="mapcheck">
+<rect x="342" y="833" width="424" height="64" rx="9" class="box step"/>
+<text x="358" y="860" class="nodetitle" text-anchor="start">自查图，再用实例走一遍</text>
+<text x="358" y="884" class="body" text-anchor="start">各步可达、各结果有去向、每个循环可退出。</text>
+</g>
+<g id="n-repairmap" data-node="repairmap">
+<rect x="862" y="827" width="376" height="80" rx="9" class="box repair"/>
+<text x="878" y="854" class="nodetitle" text-anchor="start">修正流程图</text>
+<text x="878" y="878" class="body" text-anchor="start">修掉断路、错误去向或无法退出的循环。</text>
+</g>
+<text x="814" y="842" class="edgelabel back" text-anchor="middle">发现问题</text>
+<text x="813" y="877" class="edgelabel back" text-anchor="middle">修后复查</text>
+<text x="608" y="926" class="edgelabel main" text-anchor="middle">自查通过</text>
+<g id="n-review" data-node="review">
+<rect x="342" y="946" width="424" height="68" rx="9" class="box ask"/>
+<text x="358" y="973" class="nodetitle" text-anchor="start">把图交给用户，等待审阅</text>
+<text x="358" y="997" class="body" text-anchor="start">说明关键判断、自定细节和修订处。</text>
+</g>
+<g id="n-pause" data-node="pause">
+<rect x="862" y="947" width="376" height="62" rx="8" class="box exit"/>
+<text x="1050.0" y="971" class="stoptext" text-anchor="middle">暂停 · 本次结束</text>
+<text x="1050.0" y="992" class="sidebody" text-anchor="middle">保存当前流程图，告知下次从哪里继续。</text>
+</g>
+<text x="815" y="970" class="edgelabel exit" text-anchor="middle">用户要暂停</text>
+<text x="276" y="935" class="edgelabel back" text-anchor="end">需求理解有误 → 回 1.3</text>
+<text x="302" y="1018" class="edgelabel back" text-anchor="end">只需改图 → 改后回自查</text>
+<text x="629" y="1041" class="edgelabel main" text-anchor="middle">用户确认流程图</text>
+<g id="n-write" data-node="write">
+<rect x="342" y="1091" width="424" height="85" rx="9" class="box step"/>
+<text x="358" y="1118" class="nodetitle" text-anchor="start">3　按确认图写 SKILL.md</text>
+<text x="358" y="1142" class="body" text-anchor="start">名称和触发描述取自图。开头说明用途与交付，</text>
+<text x="358" y="1161" class="body" text-anchor="start">正文按图中编号写步骤。修订只改受影响处。</text>
+</g>
+<path d="M873 1085v65" class="note-rule"/>
+<text x="885" y="1098" class="notetitle" text-anchor="start">把约束写进对应步骤</text>
+<text x="885" y="1122" class="sidebody" text-anchor="start">防违规 → 写禁令和理由。防走样 → 写结构与顺序。</text>
+<text x="885" y="1141" class="sidebody" text-anchor="start">防遗漏 → 设必填项。需要判断 → 写可观察的条件。</text>
+<g id="n-check" data-node="check">
+<rect x="342" y="1217" width="424" height="91" rx="9" class="box step"/>
+<text x="358" y="1244" class="nodetitle" text-anchor="start">检查正文能否带来预期结果</text>
+<text x="358" y="1268" class="body" text-anchor="start">先对照图查每个步骤、分支和去向。</text>
+<text x="358" y="1287" class="body" text-anchor="start">再只凭正文执行实例，并用相近请求检查误触发。</text>
+</g>
+<path d="M28 1195v84" class="note-rule"/>
+<text x="40" y="1208" class="notetitle" text-anchor="start">检查时用什么</text>
+<text x="40" y="1232" class="sidebody" text-anchor="start">有子代理只给正文和实例输入，</text>
+<text x="40" y="1251" class="sidebody" text-anchor="start">否则自行推演。修订另做原问题</text>
+<text x="40" y="1270" class="sidebody" text-anchor="start">复现检查和无关场景回归。</text>
+<g id="n-fixtext" data-node="fixtext">
+<rect x="853" y="1203" width="385" height="101" rx="8" class="box repair"/>
+<text x="869" y="1228" class="nodetitle" text-anchor="start">修正正文或触发描述</text>
+<text x="869" y="1252" class="sidebody" text-anchor="start">图正确、指令含糊或图文不符 → 只修正文。</text>
+<text x="869" y="1276" class="sidebody" text-anchor="start">错误触发或漏触发 → 修描述，同步到图顶。</text>
+</g>
+<text x="809" y="1226" class="edgelabel back" text-anchor="middle">正文或触发有误</text>
+<text x="809" y="1280" class="edgelabel back" text-anchor="middle">重新检查</text>
+<text x="1014" y="1322" class="edgelabel back" text-anchor="middle">流程图本身有误 → 回步骤 2，改图并重新取得确认</text>
+<text x="650" y="1351" class="edgelabel main" text-anchor="middle">所有检查通过</text>
+<g id="n-done" data-node="done">
+<rect x="331" y="1373" width="447" height="49" rx="24.5" class="box done"/>
+<text x="554.5" y="1403.5" class="stoptext inverse" text-anchor="middle">交付 · 目标 skill 和检查结果</text>
+</g>
+<text x="799" y="1394" class="sidebody" text-anchor="start">说明文件位置、主线、自行决定的事项、检查结果</text>
+<text x="799" y="1415" class="sidebody" text-anchor="start">和仍需用户判断的问题。</text>
+</svg>
+<div class="mobile" id="mobile"></div></figure></main>
+<footer><details id="examples"><summary>用已有实例对照这张图</summary><div class="examples"><div class="samplebar"><label for="scenario">请求类型</label><select id="scenario"></select><button id="prev">上一步</button><button id="next">下一步</button></div><p id="req"></p><ol id="sample"></ol></div></details></footer>
+<dialog id="modal"><header><h2>create-skill 正文</h2><button id="close">关闭</button></header><pre id="source"></pre></dialog>
+<script id="docdata" type="application/json">{"source": "---\nname: create-skill\ndescription: 当用户需要创建新的 skill，或修改已有 skill 的触发条件、执行流程或规则时使用。\n---\n\n# create-skill\n\n把用户的需求或一个已有的 skill，做成 Agent 能直接照着执行的 skill。先弄清用户真正要什么，再画出 skill 的流程图请用户确认，最后按流程图写成 SKILL.md 并检查。用户确认过的流程图是唯一依据：正文与流程图不一致时，以流程图为准。\n\n用户给出的通常只是一条主线，你要把它补成一份完整、可执行的 skill。每一步要写清：从哪里拿输入，可能出现哪些情况，每种情况去哪里，哪里需要用户参与，什么时候结束。你补出来的内容要明确标出来，让用户能看到、能核对，不要等用户逐条指出。\n\n## 工作流\n\n### 步骤 1：明确要开发什么样的 skill\n\n先收集材料：读完用户的请求和相关对话，用户提供的文档、示例和现有做法也要完整读取。然后判断用户的真实意图：\n- 如果用户要修订已有的 skill（点名了某个 skill、给出了路径，或说“刚才那个”），进入步骤 1.1。\n- 如果用户要新建，但这个需求不适合做成 skill，向用户说明原因并推荐更合适的做法，等待回复：\n  - 如果用户接受建议，按建议处理，结束本次任务。\n  - 如果用户仍要做成 skill，进入步骤 1.2。\n- 如果用户要新建，并且适合做成 skill，进入步骤 1.2。\n\n要求：\n- 以下需求不适合做成 skill：只做一次的任务，直接完成即可；只适用于某个项目的约定，写进项目说明文件，如 CLAUDE.md 或 AGENTS.md；需要在某个事件发生时自动执行的行为，用 hook 配置；能用脚本或校验规则强制执行的机械约束，写成脚本或校验。\n\n#### 步骤 1.1：找到并读懂要修订的 skill\n\n在个人 skill 目录、当前项目的 skill 目录和已安装的插件中，查找要修订的 skill：\n- 如果用户的描述对应多个 skill，或一个都对不上，列出最接近的候选请用户指认，等待回复后重新查找。\n- 如果确实没有这个 skill，告诉用户，并询问是否改为新建，等待回复：\n  - 如果用户同意，进入步骤 1.2。\n  - 如果用户不同意，结束本次任务。\n- 如果找到了，完整读取它的 SKILL.md、引用的文件和脚本，以及同目录下的流程图 `flow.html`（如果有）。\n\n确定要修改的文件：\n- 如果找到的 skill 位于插件缓存等由别人维护的位置，说明直接修改会在插件更新时被覆盖，给出“复制到个人 skill 目录后再改”和“仍在原处改”两个选项，推荐前者，等待回复后按用户的选择确定。\n- 如果它位于个人或项目的 skill 目录，直接修改原文件。\n\n然后把用户的修改要求落到具体行为上：写清这个 skill 现在会怎样、改完应该怎样，并找一个能复现现状的具体请求。完成后进入步骤 1.3。\n\n要求：\n- 只依据读到的原文理解现有 skill，不要凭记忆或摘要，否则容易误判要改的范围。\n\n#### 步骤 1.2：确认新 skill 的定位\n\n在已安装的 skill 中查找用途相近的：\n- 如果找到了，说明它们和这次需求的异同，给出“修订已有的”和“新建”两个选项并标出推荐，等待回复：\n  - 如果用户选修订，进入步骤 1.1。\n  - 如果用户选新建，继续本步。\n- 如果没有找到，继续本步。\n\n确定新 skill 存放在哪里：\n- 如果用户已经指明，按用户说的。\n- 如果当前项目已有存放 skill 的约定，按约定。\n- 如果都没有，询问用户，推荐只在本项目用的放项目目录，跨项目用的放个人目录，等待回复后按回复确定。\n\n完成后进入步骤 1.3。\n\n#### 步骤 1.3：核对需求是否完整\n\n对照下面的清单逐项核对。能从对话、材料、项目文件或原 skill 中找到答案的，直接补上，不要拿去问用户：\n- 解决什么问题：这个 skill 要解决的问题，以及没有它时 AI 通常会怎么做错。\n- 什么时候用：谁会在什么情况下用它，哪些相近的请求不该触发它。\n- 输入和交付：它拿到什么输入，交付什么结果，做到什么程度算完成。\n- 具体实例：至少一个真实的输入和期望的结果；修订时还要有能复现现状的请求。\n- 约束：必须遵守或不能做的事，可以使用的工具和环境。\n- 用户参与：哪些地方需要用户提供信息或做确认。\n\n根据核对结果：\n- 如果还有会影响流程走向的点不清楚，把这些点一次性问用户。每个问题说明你目前的理解，给出 2～3 个可选答案并标出推荐项；用户没给实例时，自拟一个放进问题里请用户确认，等待回复后补全理解，再核对一遍。\n- 如果剩下的都不影响流程走向，按最合理的方式自行补全，记下你的选择，进入步骤 2。\n\n要求：\n- 提问要集中，一次问清，不要零碎地反复追问。\n\n### 步骤 2：生成或更新流程图\n\n按 `references/flowchart.md` 的规则，生成或更新目标 skill 的流程图，保存为 skill 目录下的 `flow.html`：\n- 如果是新建，以实例为线索，从输入一路推到交付结果，画出主线。再挑一两个会走不同路线的情况推一遍，例如输入缺失、中途失败、用户否决，把分支补上。\n- 如果是修订，在已有流程图上修改。没有流程图时，先把原 SKILL.md 如实还原成流程图，标出原文含糊或自相矛盾的地方，再只改受影响的部分，并在图上标出改动。\n\n流程图顶部写名称、触发描述、一句话用途，以及步骤 1 得到的需求摘要。每个步骤写清输入、动作、产出、可能的结果和各自的去向。画的时候，主动补全用户没有说到的部分：\n- 每个输入从哪里来，拿不到时怎么办。\n- 动作失败或得到意外结果时去哪里。\n- 需要用户参与的地方，以及用户每种回复的去向。\n- 每个循环回到哪里、什么时候结束。可能反复多次的，写明最多几次，超过后怎么办。\n- 异常结束时告诉用户什么，留下什么。\n\n补全时遇到拿不准的地方，分两类处理：\n- 如果是方向性的问题，也就是有几种合理做法、选哪种结果明显不同，向用户提问：说明问题和取舍，给出 2～3 个建议做法并标出推荐项，等待回复后按用户的选择画进图里。\n- 如果只是局部细节，自行决定，并在图上标出你的选择，留给用户检查时一并核对。\n\n画完后先自查：每个结果都有去向，每个步骤从开始都走得到，每个循环都有退出条件，用实例沿着图走一遍能到达期望结果。发现问题先改好。\n\n然后把流程图交给用户检查：告诉用户文件位置，概括主线、关键判断和你自行决定的细节；修订时说明改了哪里，等待回复：\n- 如果用户确认，进入步骤 3。\n- 如果问题出在需求理解上，回到步骤 1.3 纠正理解，更新需求摘要，再修改流程图中受影响的部分，自查后重新请用户检查。\n- 如果问题出在流程图本身，按意见修改，自查后再请用户检查。\n- 如果用户要暂停，保存当前流程图，告诉用户下次从哪里继续，结束本次任务。\n\n要求：\n- 名称用“动词原形 + 对象”，只用小写字母、数字和连字符，如 `fix-bug`，让人看名字就知道它做什么。\n- 触发描述用第三人称，写成“当用户……时使用”，只写什么时候用，不写怎么做。和已安装的相近 skill 有重叠时，写出能区分的场景。\n- 会改变走向的规则写成动作里的条件，其余约束写在对应步骤旁边。\n- 补全以实例和常见变化中真会遇到的情况为限，不为罕见的假想情况添加规则。\n- 参考资料类 skill 的流程可以很短，不要为了画图编造步骤。\n\n### 步骤 3：按流程图写成 skill\n\n按用户确认的流程图写出 SKILL.md。frontmatter 的 name 和 description 取自流程图顶部；正文开头用一段话说明这个 skill 做什么、交付什么；然后在“工作流”模块下按流程图逐步写出每个步骤，步骤编号与流程图一致。修订时只改受影响的部分，其余原文保持不变。\n\n写约束时，按它要防止的问题选择写法：\n- 防止明知规则仍会违反，就写成明确的禁令，并说明理由。\n- 防止产出的形式走样，就正面写清产出由哪几部分组成、按什么顺序排列。\n- 防止漏掉某个要素，就在模板或清单里给它留出必填项。\n- 行为要视情况而定的，写成以可观察的条件开头的条件句，不要写“除非……”式的例外。\n\n写完后做两项检查。第一，对照流程图逐步核对，确认每个步骤、分支和去向都能在正文中找到，并且正文里没有图上没有的路径。第二，只看 SKILL.md，用实例走一遍：有子代理时，只把 SKILL.md 和实例的输入交给子代理去执行，观察它走的路线和结果；没有子代理时，自己逐步推演。另外，用一个相近但不该触发的请求检查触发描述。修订时，还要用复现请求确认原问题不再出现，并用一个与改动无关的请求确认原有行为没有被破坏。根据检查结果：\n- 如果正文与流程图不一致，或者执行时因为正文含糊而走错，修改正文，再检查一遍。\n- 如果发现流程图本身有问题，回到步骤 2 修改流程图，经用户确认后再改正文。\n- 如果触发判断有误，修改触发描述，同步到流程图顶部，再检查一遍。\n- 如果检查都通过，向用户交付：说明文件位置、这个 skill 的主线、你在写作中自行做的选择、检查结果和仍待用户决定的事项，然后结束本次任务。\n\n要求：\n- 一级步骤写“步骤 1”，子步骤写“步骤 2.1”，跳转和回退写明目标步骤。\n- 每个步骤写成连贯的段落，分支用无序列表列出各种情况。\n- 用指令式语言写清依据什么、做什么、不同情况分别去哪里，需要等待或终止时也写明；循环写明回到哪里、什么时候结束。\n- 把约束写进它生效的那一步，不要集中堆在开头或末尾。\n- 不要把并列的条件写成先后步骤，也不要用重复说明和琐碎步骤盖过主线。\n- 交给子代理检查时，不要附上流程图或你的推理，否则测不出正文本身是否够用。\n", "examples": {"create": {"name": "新建", "req": "把根据版本变更写发布说明的做法整理成 skill。", "path": [["main", "收到请求，进入步骤 1。"], ["1", "用户要新建一个写发布说明的 skill，适合做成 skill。"], ["1/新建@2", "要新建，并且适合 → 调用步骤 1.2。"], ["1.2", "没有找到用途相近的 skill；放进项目的 skill 目录。"], ["1.3", "把两点一次性问用户，并自拟 v2.3 的实例请用户确认。"], ["2", "画出流程，自查后交给用户检查。"], ["2/需求理解有误", "用户指出还要给运维人员看 → 回到步骤 1.3。"], ["1.3", "需求摘要加上“面向用户和运维两类读者”。"], ["2", "加上按读者区分的分支，用户确认。"], ["2/流程图已确认", "调用步骤 3。"], ["3", "写出 SKILL.md，两项检查都通过。"], ["3/检查通过", "return 交付 write-release-notes。"]]}, "revise": {"name": "修订", "req": "这份发布说明把内部日志调整也列出来了。修改刚才的 skill，只收录用户能感知的变化。", "path": [["main", "收到请求，进入步骤 1。"], ["1", "用户说“修改刚才的 skill”。"], ["1/修订", "调用步骤 1.1。"], ["1.1", "找到 write-release-notes，整理现状、期望和复现请求。"], ["1.1/修订依据就绪", "调用步骤 1.3。"], ["1.3", "清单各项都已明确。"], ["2", "在“选取变更”处加分支并标出改动，用户确认。"], ["3", "只改“选取变更”这一步，复现和回归检查都通过。"], ["3/检查通过", "return 交付修订后的 skill。"]]}, "exit": {"name": "提前结束", "req": "把之前那个 deploy-app 的 skill 改成先跑测试再部署。", "path": [["main", "收到请求，进入步骤 1。"], ["1", "用户点名了 deploy-app。"], ["1/修订", "调用步骤 1.1。"], ["1.1", "三个位置都找不到 deploy-app，问用户是否改为新建。"], ["1.1/不再修订", "用户回复先不用了 → return 提前结束。"]]}}, "mobile": [{"name": "01　确定需求", "steps": [["1　读取材料，判断任务", "输入：请求、对话、文档、示例和已有做法。", ["修订已有 skill → 进入 1.1。", "适合新建 → 进入 1.2。", "新建但有更合适的做法 → 说明建议并等待。接受就按建议处理并结束；坚持新建就到 1.2。", "一次性任务直接做，项目约定写入项目说明，事件自动化用 hook，机械约束可用脚本。"], "分成修订与新建两条路，在 1.3 汇合。"], ["1.1　修订路径：读原文、定改动", "在个人、项目及插件目录中查找。", ["候选不明确 → 请用户指认，收到答复后回到查找。", "确实不存在 → 问是否改为新建。同意转 1.2，不同意则结束。", "找到 → 完整读正文、引用资料、脚本和已有流程图。", "插件等外部维护位置 → 请用户选复制到个人目录后再改（推荐），或原地改。个人或项目文件直接改。"], "现状、期望、复现请求与待改文件 → 1.3。"], ["1.2　新建路径：查相近项、定位置", "输入：新建需求和已有 skill。", ["有相近项 → 比较异同，请用户选择。选修订转 1.1，选新建继续。", "无相近项 → 继续确定位置。", "用户已指定 → 用指定位置；否则按项目约定。都没有就问用户，按本项目使用或跨项目使用选择目录。"], "新建定位与存放位置 → 1.3。"], ["1.3　两条路径汇合：核对需求", "从现有材料补齐问题、触发、输入与交付、实例、约束、用户参与六项。", ["缺少会改变走向的信息 → 集中提问，给出 2～3 个选项与推荐；缺实例时自拟一个供确认。答复后回到 1.3。", "只剩局部细节 → 自行补全并记下选择。"], "需求摘要与实例 → 2。"]]}, {"name": "02　画图与确认", "steps": [["2　生成或更新目标流程图", "输入：需求摘要、实例；修订时还有旧正文和已有图。", ["新建 → 从实例画出主线，再补一两个不同场景。", "修订 → 改已有图中受影响的路径；无图则先如实还原原文、标出含糊处再改。", "方向性取舍 → 给出 2～3 个做法及推荐，请用户选择，再画入图。局部细节自行决定并标明。", "图顶写名称、第三人称触发描述、用途与需求摘要。图中写输入缺失、失败、用户回复、回路上限和超限处理、异常时的告知与保留内容。"], "目标 skill 目录的 flow.html → 自查。"], ["自查并请用户审阅", "核对步骤可达、结果有去向、循环能退出，再用实例推演。", ["自查失败 → 改图，再自查。通过后交给用户审阅。", "用户确认 → 进入 3。", "需求理解有误 → 回 1.3 更新摘要，再改图、自查和重审。", "仅需调整图 → 按意见修改，自查后再次送审。", "要求暂停 → 保存当前图与接续位置，本次结束。"], "只有经用户确认的图才进入写作。"]]}, {"name": "03　写作与验证", "steps": [["3　按确认的图写 SKILL.md", "名称、触发描述与编号取自图。修订只改受影响部分。", ["约束随步骤写：防违规写禁令与理由；防走样写结构与顺序；防遗漏留必填项；情境判断写可观察条件。"], "正文 → 图文核对与实例检查。"], ["检查结果决定回到哪里", "对照图检查覆盖和额外路径，再只用正文执行实例、测试误触发。修订另做复现和回归。", ["有子代理 → 只给正文和实例输入。没有子代理则自行推演。", "图正确、正文有误 → 修正文，重做检查。", "触发判断有误 → 修描述并同步图顶，重做检查。", "图本身有误 → 回 2 改图，重新取得用户确认，再改正文。", "全部通过 → 说明文件位置、主线、自行决定的事项、检查结果和仍需判断的问题。"], "交付目标 skill。"]]}]}</script><script>
+const data=JSON.parse(document.querySelector('#docdata').textContent);
+const get=id=>document.getElementById(id);
+const make=(tag,text,cls)=>{const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(cls)e.className=cls;return e};
+function mobileMap(){
+ const host=get('mobile');host.append(make('p','开始 · 收到创建或修订 skill 的请求','mstart'));
+ for(const phase of data.mobile){
+   host.append(make('h2',phase.name));
+   for(const [title,input,branches,product] of phase.steps){
+     const box=make('div',undefined,'mstep');box.append(make('h3',title),make('p',input));const ul=make('ul');
+     for(const s of branches){const row=make('li'),split=s.indexOf(' → ');if(split<0)row.textContent=s;else row.append(make('b',s.slice(0,split)),document.createTextNode(s.slice(split)));ul.append(row)}
+     box.append(ul);if(product)box.append(make('p',product,'output'));host.append(box)
+   }
+ }
+ host.append(make('p','结束 · 交付目标 skill、流程图和检查结果','mend'));
+}
+function showSource(){get('modal').showModal()}
+get('source').textContent=data.source;get('original').onclick=showSource;get('close').onclick=()=>get('modal').close();get('print').onclick=()=>window.print();
+const narrow=window.matchMedia('(max-width:700px)');
+function resetView(){document.body.classList.remove('fit');get('canvas').classList.remove('reading');get('fit').setAttribute('aria-pressed','false');get('fit').textContent=narrow.matches?'纵向大字阅读':'整图适屏'}
+get('fit').onclick=()=>{
+ const mobile=narrow.matches,active=mobile?get('canvas').classList.toggle('reading'):document.body.classList.toggle('fit');
+ get('fit').setAttribute('aria-pressed',String(active));
+ get('fit').textContent=mobile?(active?'返回全图':'纵向大字阅读'):(active?'恢复阅读尺寸':'整图适屏');
+};
+resetView();narrow.addEventListener('change',resetView);
+const sels=get('scenario');let index=0;
+for(const [id,s] of Object.entries(data.examples)){const option=make('option',s.name);option.value=id;sels.append(option)}
+function renderExample(){const ex=data.examples[sels.value];get('req').textContent='“'+ex.req+'”';get('sample').replaceChildren(...ex.path.map((v,i)=>make('li',v[1].replaceAll('return ','').replaceAll('调用步骤','进入步骤'),i===index?'walkcurrent':'')));get('prev').disabled=index===0;get('next').disabled=index===ex.path.length-1}
+sels.onchange=()=>{index=0;renderExample()};get('prev').onclick=()=>{if(index>0)index--;renderExample()};get('next').onclick=()=>{index=Math.min(index+1,data.examples[sels.value].path.length-1);renderExample()};
+mobileMap();renderExample();
+function restoreLocation(){
+if((location.hash==='#text'||location.hash==='#all')&&!get('modal').open)showSource();
+const scenarioLink=location.hash.match(/^#(\w+):(\d+)$/);
+if(scenarioLink&&data.examples[scenarioLink[1]]){sels.value=scenarioLink[1];index=Math.min(Math.max(+scenarioLink[2]-1,0),data.examples[sels.value].path.length-1);get('examples').open=true;renderExample();get('examples').scrollIntoView()}
+}
+restoreLocation();window.addEventListener('hashchange',restoreLocation);
+</script></body></html>

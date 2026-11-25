@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="system">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>create-skill · 工作流</title>
+<script>try { const theme = localStorage.getItem('autome-codex-theme'); if (['light','dark'].includes(theme)) document.documentElement.dataset.theme = theme; } catch {}</script>
+<style>:root {
+  color-scheme:light; --bg:#f8f8f9; --panel:#fff; --fg:#18181b; --soft:#404047; --muted:#65656e; --line:#dedee3; --tint:#f2f2f4; --hover:#ebebef; --strong:#252529; --inverse:#fff; --ring:#777780;
+  --good:#246048; --good-bg:#edf6ef; --wait:#835713; --wait-bg:#fbf2df; --back:#925218; --back-bg:#fbf0e5; --jump:#514c8b; --jump-bg:#f0eef9; --exit:#425e76; --exit-bg:#edf3f8; --bad:#a12f3b; --bad-bg:#fbebed;
+  --radius:9px; --mono:"Geist Mono",ui-monospace,SFMono-Regular,Menlo,monospace; --font:"Geist","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+:root[data-theme="dark"]{color-scheme:dark; --bg:#151517; --panel:#1c1c1f; --fg:#f4f4f5; --soft:#d4d4d8; --muted:#aaaab3; --line:#39393e; --tint:#28282c; --hover:#35353a; --strong:#e4e4e7; --inverse:#18181b; --ring:#a1a1aa; --good:#a0d7af; --good-bg:#23392d; --wait:#e6c68a; --wait-bg:#393021; --back:#e0b489; --back-bg:#3a2d24; --jump:#c2b9e9; --jump-bg:#302c40; --exit:#b0cbdf; --exit-bg:#233440; --bad:#f6a6ae; --bad-bg:#43292d;}
+@media(prefers-color-scheme:dark){:root[data-theme="system"]{color-scheme:dark; --bg:#151517; --panel:#1c1c1f; --fg:#f4f4f5; --soft:#d4d4d8; --muted:#aaaab3; --line:#39393e; --tint:#28282c; --hover:#35353a; --strong:#e4e4e7; --inverse:#18181b; --ring:#a1a1aa; --good:#a0d7af; --good-bg:#23392d; --wait:#e6c68a; --wait-bg:#393021; --back:#e0b489; --back-bg:#3a2d24; --jump:#c2b9e9; --jump-bg:#302c40; --exit:#b0cbdf; --exit-bg:#233440; --bad:#f6a6ae; --bad-bg:#43292d;}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.55 var(--font);-webkit-font-smoothing:antialiased}button,select{font:inherit;color:inherit}button{cursor:pointer;background:none;border:0;padding:0}button:disabled{opacity:.38;cursor:default}button:focus-visible,select:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ring);outline-offset:3px}button:not(:disabled):hover,summary:hover{color:var(--fg)}[hidden]{display:none!important}h1,h2,h3,h4,p{margin:0}.ic{width:16px;height:16px;display:inline-block;flex:none;vertical-align:-.18em;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}.sprite{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}code,.mono{font-family:var(--mono);font-size:.94em;overflow-wrap:anywhere}.header{background:var(--panel);position:relative;z-index:3}.mast,.tools{padding-inline:clamp(16px,2.2vw,36px);display:flex;gap:18px;justify-content:space-between;align-items:center}.mast{min-height:74px;padding-block:11px}.identity,.settings,.viewtools,.tools,.walktools,.walkcontrols,.selectbox,.switch,.status,#tabs{display:flex;align-items:center}.identity{gap:12px;min-width:0}.brand{background:var(--strong);color:var(--inverse);border-radius:10px;width:39px;height:39px;display:grid;place-items:center;flex:none}.brand .ic{width:22px;height:22px}.identity strong{font-size:21px;line-height:1.1;letter-spacing:-.055em}.identity p,.page-title p,.muted{color:var(--muted)}.identity p{margin-top:3px;font-size:12px}.settings{gap:17px;flex:none}.status,.switch,.selectbox,.icon-button{font-size:12px;gap:7px}.status{color:var(--soft);font-weight:550}.status.bad{color:var(--bad)}.selectbox,.icon-button{height:33px;background:var(--panel);border:1px solid var(--line);border-radius:7px;position:relative}.selectbox{padding-inline:9px;white-space:nowrap}.selectbox select{appearance:none;background:transparent;border:0;padding:0 23px 0 32px;position:relative;z-index:1;cursor:pointer;height:100%;margin-inline:-9px;width:calc(100% + 18px)}.selectbox select option{background:var(--panel);color:var(--fg)}.selectbox>i,.selectbox>#theme-icon{position:absolute;left:9px;pointer-events:none;display:flex}.selectbox>i:last-child{left:auto;right:7px}.selectbox>i:last-child .ic{width:12px}.icon-button{width:33px;display:inline-grid;place-items:center;flex:none}.icon-button:hover:not(:disabled),.selectbox:hover,.outline:hover{background:var(--tint)}.tools{border-block:1px solid var(--line);min-height:52px;gap:10px}.viewtools,.walktools{gap:18px}.walkcontrols{gap:4px}.walkcontrols .selectbox{margin-right:2px}.switch{white-space:nowrap}.track{position:relative;width:30px;height:17px;background:var(--line);border-radius:100px}.track:after{content:"";position:absolute;left:2px;top:2px;width:13px;height:13px;border-radius:50%;background:var(--panel);box-shadow:0 1px 2px #18181b40;transition:transform .16s}.switch[aria-checked=true] .track{background:var(--strong)}.switch[aria-checked=true] .track:after{background:var(--inverse);transform:translateX(13px)}#tabs{background:var(--tint);border-radius:8px;padding:3px;gap:2px}.tab{padding:5px 13px;display:flex;align-items:center;gap:6px;border-radius:6px;font-weight:540;color:var(--muted);font-size:13px;white-space:nowrap}.tab .ic{width:14px;height:14px}.tab[aria-selected=true]{background:var(--panel);color:var(--fg);box-shadow:0 1px 3px #18181b20}.workspace{display:grid;grid-template-columns:clamp(222px,20vw,286px) minmax(0,1fr);min-height:0;flex:1}body{height:100dvh;display:flex;flex-direction:column}.sidebar{background:var(--panel);border-right:1px solid var(--line);overflow:auto;padding:18px 12px 48px;scrollbar-width:thin}.navgroup+.navgroup{margin-top:21px}.navgroup h2{color:var(--muted);font-size:11px;letter-spacing:.06em;font-weight:620;padding:0 10px;margin-bottom:5px}.navitem{width:100%;text-align:left;display:flex;align-items:center;gap:7px;padding:5px 9px;border-radius:6px;line-height:1.45;font-size:12.5px;color:var(--soft);min-height:29px}.navitem:hover,.navitem[aria-current=true]{background:var(--tint);color:var(--fg)}.navitem[aria-current=true]{font-weight:620}.navitem.sub{padding-left:23px}.navitem .ic{width:14px;height:14px;color:var(--muted)}.navnum,.num,.actnum,.count{font-family:var(--mono);font-variant-numeric:tabular-nums}.navnum{font-size:11px;min-width:22px;color:var(--muted)}.navitem .meta{margin-left:auto;white-space:nowrap;color:var(--muted);font:10.5px var(--mono)}.navitem .filename{overflow-wrap:anywhere}.navgroup .local{font-size:11.5px}.navempty{padding:2px 9px;font-size:11px;color:var(--muted)}
+#reader{min-width:0;overflow:auto;scrollbar-gutter:stable;position:relative}#reader>section,#walkbar{max-width:1160px;margin-inline:auto;padding-inline:clamp(20px,3vw,50px)}#reader>section{padding-block:28px 75px}.page-title{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:19px}.page-title h1{font-size:clamp(25px,2.15vw,34px);font-weight:680;letter-spacing:-.045em;line-height:1.28}.page-title p{font-size:13px;margin-top:4px}.count{font-size:11.5px;color:var(--muted);white-space:nowrap}.card,#overview{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius)}#overview{background-color:var(--panel);background-image:radial-gradient(var(--line) .65px,transparent .85px);background-size:13px 13px;margin-bottom:22px}.overview-scroll{overflow-x:auto}.overview-svg{width:100%;min-width:560px;display:block;color:var(--fg);font-family:var(--font)}.overview-svg text{pointer-events:none}.maplink{cursor:pointer}.maplink rect{stroke:var(--line);fill:var(--panel);stroke-width:1.2}.maplink:hover rect,.maplink:focus rect{stroke:var(--ring);fill:var(--tint)}.maplink.primary rect{fill:var(--strong);stroke:var(--strong)}.maplink.primary text{fill:var(--inverse)}.maplink.done rect{fill:var(--good-bg);stroke:var(--good)}.maplink.done text{fill:var(--good)}.mapname{font-size:13px;font-weight:630;fill:var(--fg)}.mapback{stroke:var(--back);fill:none;stroke-dasharray:4 3}.mapwire{fill:none;stroke:var(--muted)}.maplabel{font-size:11px;fill:var(--back);paint-order:stroke;stroke:var(--panel);stroke-width:4}.mapnote{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:11px 16px 0;font-size:12px;color:var(--muted)}.mapnote strong{color:var(--soft);font-weight:600}.mapnote span{display:flex;align-items:center;gap:6px}.mapnote .ic{width:14px;height:14px}
+.step-card{position:relative;scroll-margin-block:12px;border-radius:var(--radius);background:var(--panel);border:1px solid var(--line);padding:20px clamp(14px,2vw,28px) 0}.step-heading{display:flex;align-items:flex-start;gap:11px}.num{border:1px solid var(--line);background:var(--tint);color:var(--soft);font-size:12px;font-weight:650;border-radius:6px;min-width:31px;padding:3px 6px;text-align:center}.step-card.top .num{background:var(--strong);color:var(--inverse);border-color:var(--strong)}.step-heading h2{font-size:clamp(17px,1.45vw,22px);letter-spacing:-.035em;font-weight:640;line-height:1.45}.step-head-actions{margin-left:auto;flex:none}.quiet{font-size:12px;color:var(--muted);display:inline-flex;gap:5px;align-items:center;border-radius:5px;padding:3px 5px}.quiet:hover{background:var(--tint)}.quiet .ic{width:14px;height:14px}.io{display:grid;grid-template-columns:1fr 1fr;gap:8px 22px;margin:15px 0 18px}.io>div{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px;font-size:12px;color:var(--soft);align-items:baseline}.io dt{color:var(--muted);white-space:nowrap}.io dd{margin:0}.rule-list,.checklist{padding-left:24px;margin:6px 0 16px;color:var(--soft);font-size:13px}.rule-list li,.checklist li{margin:3px 0}.timeline{list-style:none;margin:0;padding:0}.action{display:grid;grid-template-columns:23px minmax(0,1fr);gap:10px;position:relative;padding-bottom:16px;scroll-margin-block:16px}.action::before{content:"";position:absolute;width:1px;background:var(--line);left:11px;top:26px;bottom:2px}.action:last-child::before{display:none}.marker{margin-top:2px;border:1px solid var(--line);color:var(--muted);width:23px;height:23px;border-radius:50%;display:grid;place-items:center}.marker .ic{width:13px;height:13px}.marker.wait{background:var(--wait-bg);border:0;color:var(--wait)}.marker.decide{background:var(--tint);color:var(--soft)}.actnum{font-size:11px}.action-top{display:flex;align-items:center;gap:5px 9px;flex-wrap:wrap;min-height:26px}.action-title{font-size:14px;font-weight:610;display:inline-flex;gap:4px;align-items:center;text-align:left}.action-title .ic{width:12px;height:12px;color:var(--muted)}[aria-expanded=true]>.chev{transform:rotate(180deg)}.original{font-size:13px;color:var(--soft);margin:6px 0;line-height:1.7}.rtype{display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--muted)}.rtype .ic{width:12px;height:12px}.rtype.wait{color:var(--wait)}.resource,.badge{display:inline-flex;align-items:center;gap:4px;border-radius:5px;padding:2px 7px;font-size:11.5px;max-width:100%;line-height:1.6}.resource{border:1px solid var(--line);color:var(--soft);overflow-wrap:anywhere}.resource.proposed{border-style:dashed}.resource .ic,.badge .ic{width:13px;height:13px}.resource:hover,.badge:hover{filter:brightness(.95)}.branch-table,.matrix{width:100%;border-collapse:collapse;font-size:12.5px}.branch-table{table-layout:fixed;margin-top:8px}.branch-table th,.matrix th{color:var(--muted);font-size:11px;font-weight:560;text-align:left}.branch-table th{background:var(--tint);padding:5px 8px}.branch-table th:first-child{border-radius:5px 0 0 5px;width:34%}.branch-table th:last-child{border-radius:0 5px 5px 0;width:24%}.branch-table td{vertical-align:top;padding:6px 8px;overflow-wrap:anywhere}.branch-table tr+tr td{border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)}.condition{display:flex;align-items:baseline;gap:4px;padding-left:calc(var(--depth)*13px)}.condition .ic{width:12px;height:12px;color:var(--muted)}.handling{color:var(--soft)}.waiting{color:var(--wait)}.extra{display:block;font-size:12px;color:var(--muted);margin-top:3px}.badge{font-weight:550;white-space:normal;text-align:left;background:var(--tint);color:var(--soft)}.badge.sub{border:1px solid var(--line);background:var(--panel)}.badge.end{color:var(--good);background:var(--good-bg)}.badge.wait{color:var(--wait);background:var(--wait-bg)}.badge.back{color:var(--back);background:var(--back-bg)}.badge.jump{color:var(--jump);background:var(--jump-bg)}.badge.exit{color:var(--exit);background:var(--exit-bg)}.badge.fail{color:var(--bad);background:var(--bad-bg)}.step-footer{border-top:1px solid var(--line);padding:10px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;color:var(--muted);font-size:12px}.children{border-left:1px solid var(--line);padding:0 0 0 18px;margin:13px 0 0 13px}.children-label,.connector{color:var(--muted);font-size:12px;display:flex;align-items:center;gap:6px}.children-label{margin-bottom:8px}.children .step-card+.step-card{margin-top:12px}.connector{justify-content:center;padding:10px 0}.finish{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);padding:15px 20px;border:1px solid var(--line);border-radius:var(--radius);font-size:13px}.finish>.ic{color:var(--good)}.finish span{color:var(--muted)}.flash{outline:2px solid var(--ring);outline-offset:-2px}.walking .step-card:not(.visited){opacity:.48}.step-card.current{border-color:var(--ring);box-shadow:0 0 0 1px var(--ring)}.branch-table tr.passed{background:var(--tint)}.branch-table tr.current,.step-footer.current{background:var(--hover);box-shadow:inset 3px 0 0 var(--fg)}#walkbar{position:sticky;top:0;z-index:2;background:var(--panel);border-bottom:1px solid var(--line);padding-block:8px;font-size:12px;box-shadow:0 2px 4px #18181b08}#walkbar b{margin-right:8px}#walkbar .walk-caption{color:var(--muted);font-size:11.5px}.walking{scroll-padding-top:75px}
+.section-heading{font-size:17px;letter-spacing:-.02em;margin:22px 0 9px}.tree,.table-scroll{background:var(--panel);border-radius:var(--radius);border:1px solid var(--line)}.tree{padding:12px 16px}.tree-row{display:flex;align-items:center;gap:8px;min-height:31px;width:100%;text-align:left;padding:3px 6px;font-size:13px}.tree-row.file{padding-left:27px}.tree-row.file:hover,.use:hover{background:var(--tint);border-radius:6px}.tree-row .meta{margin-left:auto;font-size:11px;color:var(--muted)}.table-scroll{overflow:auto}.matrix{min-width:570px}.matrix td,.matrix th{padding:10px 12px;text-align:center}.matrix tr+tr{border-top:1px solid var(--line)}.matrix thead{background:var(--tint)}.matrix th:first-child,.matrix td:first-child{text-align:left}.matrix .cell{min-width:22px;border-radius:4px;padding:1px 5px;background:var(--tint);font:12px var(--mono);margin:1px}.file-note{color:var(--muted);font-size:12px;margin:8px 0}.table-scroll+.file-note{margin-top:8px}#markdown{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.9 var(--mono);padding:clamp(14px,2vw,28px);margin:0}
+dialog{color:var(--fg);background:var(--panel);border:1px solid var(--line);padding:0}dialog::backdrop{background:#09090b55}.sheet,.nav-drawer{position:fixed;inset:0 0 0 auto;margin:0;width:min(420px,96vw);max-width:none;height:100dvh;max-height:none;padding:22px 24px;overflow:auto}.sheet[open]{animation:slide .17s ease-out}.sheet-head,.drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}.sheet-head>span{display:grid;place-items:center;width:38px;height:38px;background:var(--tint);border-radius:8px}.sheet h2{font-size:22px}.sheet h3{font-size:12px;color:var(--muted);margin:21px 0 6px;font-weight:560}.sheet ul{padding-left:18px;margin:0}.sheet li+li{margin-top:4px}.sheet-path{color:var(--muted);margin:3px 0 8px}.use{display:flex;align-items:center;gap:8px;width:100%;text-align:left;min-height:36px;padding:5px 4px}.use span{flex:1}.use small{display:block;color:var(--muted)}.use .ic{width:14px}.nav-drawer{inset:0 auto 0 0;width:min(320px,90vw)}#menu{display:none}
+@keyframes slide{from{transform:translateX(100%)}to{transform:translateX(0)}}@media(prefers-reduced-motion:reduce){*,*:after{animation:none!important;transition:none!important}}
+@media(min-width:1600px){.workspace{grid-template-columns:290px 1fr}}
+@media(max-width:950px){.workspace{grid-template-columns:206px minmax(0,1fr)}.sidebar{padding-inline:7px}.navitem{font-size:12px}#reader>section,#walkbar{padding-inline:19px}.step-card{padding-inline:16px}.theme select{max-width:118px}.viewtools,.walktools{gap:10px}.branch-table th:first-child{width:32%}.branch-table th:last-child{width:27%}.count{white-space:normal}.settings{gap:9px}}
+@media(max-width:790px){.workspace{grid-template-columns:minmax(0,1fr)}.sidebar{display:none}#menu{display:grid}.mast,.tools{padding-inline:13px}.walktools{gap:8px}.tools{flex-wrap:wrap;padding-block:6px}.page-title{margin-bottom:12px}#reader>section{padding-block:18px 48px}.mast{min-height:66px}.identity p{max-width:55ch}.brand{width:33px;height:33px}.viewtools{gap:6px}}
+@media(max-width:580px){.mast{align-items:flex-start;gap:7px}.identity{gap:8px}.identity strong{font-size:18px}.identity p{font-size:11px}.status{font-size:0;gap:0;padding:6px}.status .ic{width:16px;height:16px}.settings{gap:4px}.theme{width:36px}.theme select{width:36px;min-width:36px;padding:0;color:transparent}.theme>i:last-child{display:none}.theme select option{color:var(--fg)}.tools{gap:6px}.walktools{width:100%;justify-content:space-between}.tab{padding:4px 12px}.switch{font-size:12px}.page-title{align-items:flex-start}.count{font-size:10.5px;padding-top:5px;white-space:nowrap;flex:none}.page-title{flex-wrap:wrap;gap:4px 12px}#reader>section,#walkbar{padding-inline:12px}.mapnote{font-size:11px;padding:9px 10px 0}.overview-svg{min-width:0;max-height:330px}.step-card{padding:13px 10px 0}.num{min-width:25px;padding:2px 4px}.step-heading{gap:7px}.io{grid-template-columns:1fr;gap:3px;margin:9px 0 13px}.children{padding-left:8px;margin-left:4px}.action{grid-template-columns:18px minmax(0,1fr);gap:5px}.marker{width:18px;height:18px}.action::before{left:8.5px;top:24px}.branch-table th,.branch-table td{padding:5px 3px}.branch-table{font-size:12px}.branch-table th:first-child{width:32%}.branch-table th:last-child{width:29%}.condition{padding-left:calc(var(--depth)*5px);gap:2px}.badge,.resource{font-size:11px;padding:2px 4px}.tree{padding-inline:7px}.tree-row .meta{font-size:10px}.quiet{font-size:11px}.mapnote span:last-child{font-size:10px}}
+
+
+.full-only{display:none}body.full .full-only{display:block}.children .step-group+.step-group{margin-top:12px}.default-dest{display:inline-flex;gap:5px;align-items:center}.branch-table tr[id]{scroll-margin:16px}
+</style></head>
+<body>
+<!-- Lucide v0.468.0
+ISC License
+
+Copyright (c) for portions of Lucide are held by Cole Bemis 2013-2022 as part of Feather (MIT). All other copyright (c) for Lucide are held by Lucide Contributors 2022.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+-->
+<svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+<symbol id="ico-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14" />
+  <path d="m19 12-7 7-7-7" /></symbol>
+<symbol id="ico-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10" />
+  <path d="M7 17 17 7" /></symbol>
+<symbol id="ico-badge" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /></symbol>
+<symbol id="ico-book-open" viewBox="0 0 24 24"><path d="M12 7v14" />
+  <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></symbol>
+<symbol id="ico-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+<symbol id="ico-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol>
+<symbol id="ico-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></symbol>
+<symbol id="ico-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol>
+<symbol id="ico-circle-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" />
+  <line x1="12" x2="12" y1="8" y2="12" />
+  <line x1="12" x2="12.01" y1="16" y2="16" /></symbol>
+<symbol id="ico-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" />
+  <path d="m9 12 2 2 4-4" /></symbol>
+<symbol id="ico-circle-stop" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" />
+  <rect x="9" y="9" width="6" height="6" rx="1" /></symbol>
+<symbol id="ico-code" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6" />
+  <polyline points="8 6 2 12 8 18" /></symbol>
+<symbol id="ico-corner-down-right" viewBox="0 0 24 24"><polyline points="15 10 20 15 15 20" />
+  <path d="M4 4v7a4 4 0 0 0 4 4h12" /></symbol>
+<symbol id="ico-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+  <path d="M14 2v4a2 2 0 0 0 2 2h4" /></symbol>
+<symbol id="ico-file-box" viewBox="0 0 24 24"><path d="M14.5 22H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4" />
+  <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+  <path d="M3 13.1a2 2 0 0 0-1 1.76v3.24a2 2 0 0 0 .97 1.78L6 21.7a2 2 0 0 0 2.03.01L11 19.9a2 2 0 0 0 1-1.76V14.9a2 2 0 0 0-.97-1.78L8 11.3a2 2 0 0 0-2.03-.01Z" />
+  <path d="M7 17v5" />
+  <path d="M11.7 14.2 7 17l-4.7-2.8" /></symbol>
+<symbol id="ico-file-text" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+  <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+  <path d="M10 9H8" />
+  <path d="M16 13H8" />
+  <path d="M16 17H8" /></symbol>
+<symbol id="ico-files" viewBox="0 0 24 24"><path d="M20 7h-3a2 2 0 0 1-2-2V2" />
+  <path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z" />
+  <path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8" /></symbol>
+<symbol id="ico-filter" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></symbol>
+<symbol id="ico-focus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" />
+  <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+  <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+  <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+  <path d="M7 21H5a2 2 0 0 1-2-2v-2" /></symbol>
+<symbol id="ico-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></symbol>
+<symbol id="ico-folder-tree" viewBox="0 0 24 24"><path d="M20 10a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2.5a1 1 0 0 1-.8-.4l-.9-1.2A1 1 0 0 0 15 3h-2a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z" />
+  <path d="M20 21a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-2.9a1 1 0 0 1-.88-.55l-.42-.85a1 1 0 0 0-.92-.6H13a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1Z" />
+  <path d="M3 5a2 2 0 0 0 2 2h3" />
+  <path d="M3 3v13a2 2 0 0 0 2 2h3" /></symbol>
+<symbol id="ico-git-branch" viewBox="0 0 24 24"><line x1="6" x2="6" y1="3" y2="15" />
+  <circle cx="18" cy="6" r="3" />
+  <circle cx="6" cy="18" r="3" />
+  <path d="M18 9a9 9 0 0 1-9 9" /></symbol>
+<symbol id="ico-git-fork" viewBox="0 0 24 24"><circle cx="12" cy="18" r="3" />
+  <circle cx="6" cy="6" r="3" />
+  <circle cx="18" cy="6" r="3" />
+  <path d="M18 9v2c0 .6-.4 1-1 1H7c-.6 0-1-.4-1-1V9" />
+  <path d="M12 12v3" /></symbol>
+<symbol id="ico-group" viewBox="0 0 24 24"><path d="M3 7V5c0-1.1.9-2 2-2h2" />
+  <path d="M17 3h2c1.1 0 2 .9 2 2v2" />
+  <path d="M21 17v2c0 1.1-.9 2-2 2h-2" />
+  <path d="M7 21H5c-1.1 0-2-.9-2-2v-2" />
+  <rect width="7" height="5" x="7" y="7" rx="1" />
+  <rect width="7" height="5" x="10" y="12" rx="1" /></symbol>
+<symbol id="ico-hash" viewBox="0 0 24 24"><line x1="4" x2="20" y1="9" y2="9" />
+  <line x1="4" x2="20" y1="15" y2="15" />
+  <line x1="10" x2="8" y1="3" y2="21" />
+  <line x1="16" x2="14" y1="3" y2="21" /></symbol>
+<symbol id="ico-heading" viewBox="0 0 24 24"><path d="M6 12h12" />
+  <path d="M6 20V4" />
+  <path d="M18 20V4" /></symbol>
+<symbol id="ico-key" viewBox="0 0 24 24"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4" />
+  <path d="m21 2-9.6 9.6" />
+  <circle cx="7.5" cy="15.5" r="5.5" /></symbol>
+<symbol id="ico-list" viewBox="0 0 24 24"><path d="M3 12h.01" />
+  <path d="M3 18h.01" />
+  <path d="M3 6h.01" />
+  <path d="M8 12h13" />
+  <path d="M8 18h13" />
+  <path d="M8 6h13" /></symbol>
+<symbol id="ico-list-checks" viewBox="0 0 24 24"><path d="m3 17 2 2 4-4" />
+  <path d="m3 7 2 2 4-4" />
+  <path d="M13 6h8" />
+  <path d="M13 12h8" />
+  <path d="M13 18h8" /></symbol>
+<symbol id="ico-log-out" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+  <polyline points="16 17 21 12 16 7" />
+  <line x1="21" x2="9" y1="12" y2="12" /></symbol>
+<symbol id="ico-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" />
+  <path d="M15 5.764v15" />
+  <path d="M9 3.236v15" /></symbol>
+<symbol id="ico-menu" viewBox="0 0 24 24"><line x1="4" x2="20" y1="12" y2="12" />
+  <line x1="4" x2="20" y1="6" y2="6" />
+  <line x1="4" x2="20" y1="18" y2="18" /></symbol>
+<symbol id="ico-message-square" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></symbol>
+<symbol id="ico-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" />
+  <line x1="8" x2="16" y1="21" y2="21" />
+  <line x1="12" x2="12" y1="17" y2="21" /></symbol>
+<symbol id="ico-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" /></symbol>
+<symbol id="ico-move" viewBox="0 0 24 24"><path d="M12 2v20" />
+  <path d="m15 19-3 3-3-3" />
+  <path d="m19 9 3 3-3 3" />
+  <path d="M2 12h20" />
+  <path d="m5 9-3 3 3 3" />
+  <path d="m9 5 3-3 3 3" /></symbol>
+<symbol id="ico-option" viewBox="0 0 24 24"><path d="M3 3h6l6 18h6" />
+  <path d="M14 3h7" /></symbol>
+<symbol id="ico-panel-left" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" />
+  <path d="M9 3v18" /></symbol>
+<symbol id="ico-presentation" viewBox="0 0 24 24"><path d="M2 3h20" />
+  <path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" />
+  <path d="m7 21 5-5 5 5" /></symbol>
+<symbol id="ico-replace" viewBox="0 0 24 24"><path d="M14 4a2 2 0 0 1 2-2" />
+  <path d="M16 10a2 2 0 0 1-2-2" />
+  <path d="M20 2a2 2 0 0 1 2 2" />
+  <path d="M22 8a2 2 0 0 1-2 2" />
+  <path d="m3 7 3 3 3-3" />
+  <path d="M6 10V5a3 3 0 0 1 3-3h1" />
+  <rect x="2" y="14" width="8" height="8" rx="2" /></symbol>
+<symbol id="ico-reply" viewBox="0 0 24 24"><polyline points="9 17 4 12 9 7" />
+  <path d="M20 18v-2a4 4 0 0 0-4-4H4" /></symbol>
+<symbol id="ico-rotate-ccw" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+  <path d="M3 3v5h5" /></symbol>
+<symbol id="ico-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="3" />
+  <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+  <circle cx="18" cy="5" r="3" /></symbol>
+<symbol id="ico-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+  <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+  <path d="M7 3v4a1 1 0 0 0 1 1h7" /></symbol>
+<symbol id="ico-scroll" viewBox="0 0 24 24"><path d="M19 17V5a2 2 0 0 0-2-2H4" />
+  <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol>
+<symbol id="ico-section" viewBox="0 0 24 24"><path d="M16 5a4 3 0 0 0-8 0c0 4 8 3 8 7a4 3 0 0 1-8 0" />
+  <path d="M8 19a4 3 0 0 0 8 0c0-4-8-3-8-7a4 3 0 0 1 8 0" /></symbol>
+<symbol id="ico-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+  <circle cx="12" cy="12" r="3" /></symbol>
+<symbol id="ico-sheet" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+  <line x1="3" x2="21" y1="9" y2="9" />
+  <line x1="3" x2="21" y1="15" y2="15" />
+  <line x1="9" x2="9" y1="9" y2="21" />
+  <line x1="15" x2="15" y1="9" y2="21" /></symbol>
+<symbol id="ico-shield-check" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  <path d="m9 12 2 2 4-4" /></symbol>
+<symbol id="ico-shuffle" viewBox="0 0 24 24"><path d="m18 14 4 4-4 4" />
+  <path d="m18 2 4 4-4 4" />
+  <path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22" />
+  <path d="M2 6h1.972a4 4 0 0 1 3.6 2.2" />
+  <path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45" /></symbol>
+<symbol id="ico-slice" viewBox="0 0 24 24"><path d="M11 16.586V19a1 1 0 0 1-1 1H2L18.37 3.63a1 1 0 1 1 3 3l-9.663 9.663a1 1 0 0 1-1.414 0L8 14" /></symbol>
+<symbol id="ico-split" viewBox="0 0 24 24"><path d="M16 3h5v5" />
+  <path d="M8 3H3v5" />
+  <path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3" />
+  <path d="m15 9 6-6" /></symbol>
+<symbol id="ico-square-terminal" viewBox="0 0 24 24"><path d="m7 11 2-2-2-2" />
+  <path d="M11 13h4" />
+  <rect width="18" height="18" x="3" y="3" rx="2" ry="2" /></symbol>
+<symbol id="ico-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" />
+  <path d="M12 2v2" />
+  <path d="M12 20v2" />
+  <path d="m4.93 4.93 1.41 1.41" />
+  <path d="m17.66 17.66 1.41 1.41" />
+  <path d="M2 12h2" />
+  <path d="M20 12h2" />
+  <path d="m6.34 17.66-1.41 1.41" />
+  <path d="m19.07 4.93-1.41 1.41" /></symbol>
+<symbol id="ico-table" viewBox="0 0 24 24"><path d="M12 3v18" />
+  <rect width="18" height="18" x="3" y="3" rx="2" />
+  <path d="M3 9h18" />
+  <path d="M3 15h18" /></symbol>
+<symbol id="ico-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" />
+  <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" /></symbol>
+<symbol id="ico-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" />
+  <circle cx="12" cy="12" r="6" />
+  <circle cx="12" cy="12" r="2" /></symbol>
+<symbol id="ico-terminal" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5" />
+  <line x1="12" x2="20" y1="19" y2="19" /></symbol>
+<symbol id="ico-text" viewBox="0 0 24 24"><path d="M17 6.1H3" />
+  <path d="M21 12.1H3" />
+  <path d="M15.1 18H3" /></symbol>
+<symbol id="ico-type" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7" />
+  <line x1="9" x2="15" y1="20" y2="20" />
+  <line x1="12" x2="12" y1="4" y2="20" /></symbol>
+<symbol id="ico-undo-2" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5" />
+  <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" /></symbol>
+<symbol id="ico-view" viewBox="0 0 24 24"><path d="M21 17v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2" />
+  <path d="M21 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2" />
+  <circle cx="12" cy="12" r="1" />
+  <path d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0" /></symbol>
+<symbol id="ico-workflow" viewBox="0 0 24 24"><rect width="8" height="8" x="3" y="3" rx="2" />
+  <path d="M7 11v4a2 2 0 0 0 2 2h4" />
+  <rect width="8" height="8" x="13" y="13" rx="2" /></symbol>
+<symbol id="ico-x" viewBox="0 0 24 24"><path d="M18 6 6 18" />
+  <path d="m6 6 12 12" /></symbol>
+</defs></svg>
+<header class="header">
+  <div class="mast"><div class="identity"><span class="brand" data-icon="workflow"></span><div><strong id="name"></strong><p id="trigger"></p></div></div>
+  <div class="settings"><button id="status" class="status" aria-haspopup="dialog"></button>
+  <label class="selectbox theme"><span id="theme-icon"></span><select id="theme" aria-label="主题"><option value="system">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select><i data-icon="chevron-down"></i></label></div></div>
+  <div class="tools"><div class="viewtools"><button id="menu" class="icon-button" aria-label="打开流程目录" aria-controls="nav-drawer" data-icon="panel-left"></button>
+  <div role="tablist" aria-label="视图" id="tabs"></div></div>
+  <div class="walktools"><button id="full" role="switch" aria-checked="false" class="switch"><span class="track"></span>显示完整文字</button>
+  <div class="walkcontrols"><label class="selectbox"><i data-icon="route"></i><select id="scenario" aria-label="示例走查"><option value="">示例走查</option></select><i data-icon="chevron-down"></i></label>
+  <button id="prev" class="icon-button" aria-label="示例上一步" title="上一步（←）" data-icon="chevron-left" disabled></button><button id="next" class="icon-button" aria-label="示例下一步" title="下一步（→）" data-icon="chevron-right" disabled></button></div></div></div>
+</header>
+<div class="workspace"><aside class="sidebar" aria-label="流程目录"><nav id="index"></nav></aside>
+<main id="reader">
+  <div id="walkbar" role="status" aria-live="polite" hidden></div>
+  <section id="flow" role="tabpanel" aria-labelledby="tab-flow"><div class="page-title"><div><h1>工作流</h1><p>从创建或修订请求，到交付可执行的 skill。</p></div><span id="flow-count" class="count"></span></div>
+  <div id="overview"></div><div id="cards"></div></section>
+  <section id="files" role="tabpanel" aria-labelledby="tab-files" hidden><div class="page-title"><div><h1>文件结构</h1><p>查看 skill 包的组成，以及每个资源在流程中的使用位置。</p></div></div><div id="file-data"></div></section>
+  <section id="text" role="tabpanel" aria-labelledby="tab-text" hidden><div class="page-title"><div><h1>文字版</h1><p>从当前流程数据导出的 SKILL.md 正文。</p></div></div><pre id="markdown" class="card"></pre></section>
+</main></div>
+<dialog id="sheet" class="sheet" aria-labelledby="sheet-title"><div class="sheet-head"><span id="sheet-icon"></span><button class="icon-button" aria-label="关闭详情" data-close data-icon="x"></button></div><div id="sheet-body"></div></dialog>
+<dialog id="nav-drawer" class="nav-drawer" aria-label="流程目录"><div class="drawer-head"><b>流程目录</b><button class="icon-button" data-close aria-label="关闭目录" data-icon="x"></button></div><nav id="mobile-index"></nav></dialog>
+<script>
+const FLOW = {
+  name:'create-skill',
+  description:'当用户需要创建新的 skill，或修改已有 skill 的触发条件、执行流程或规则时使用。',
+  intro:['把用户的需求或一个已有的 skill，做成 Agent 能直接照着执行的 skill。先弄清用户真正要什么，再画出 skill 的流程图请用户确认，最后按流程图写成 SKILL.md 并检查。用户确认过的流程图是唯一依据：正文与流程图不一致时，以流程图为准。',
+         '用户给出的通常只是一条主线，你要把它补成一份完整、可执行的 skill。每一步要写清：从哪里拿输入，可能出现哪些情况，每种情况去哪里，哪里需要用户参与，什么时候结束。你补出来的内容要明确标出来，让用户能看到、能核对，不要等用户逐条指出。'],
+};
+const STEPS = {
+  '1': {title:'明确要开发什么样的 skill', input:'用户请求、相关对话和用户提供的材料',
+    acts:[{t:'先收集材料：读完用户的请求和相关对话，用户提供的文档、示例和现有做法也要完整读取'},
+          {t:'然后判断用户的真实意图', br:[
+            {when:'用户要修订已有的 skill（点名了某个 skill、给出了路径，或说“刚才那个”）', out:'修订'},
+            {when:'用户要新建，但这个需求不适合做成 skill', ask:'向用户说明原因并推荐更合适的做法', ans:[
+              {when:'用户接受建议', out:'改用其他方式'},
+              {when:'用户仍要做成 skill', out:'新建'}]},
+            {when:'用户要新建，并且适合做成 skill', out:'新建'}]}],
+    rules:[{t:'以下需求不适合做成 skill：只做一次的任务，直接完成即可；只适用于某个项目的约定，写进项目说明文件，如 CLAUDE.md 或 AGENTS.md；需要在某个事件发生时自动执行的行为，用 hook 配置；能用脚本或校验规则强制执行的机械约束，写成脚本或校验'}],
+    outcomes:[{tag:'修订', kind:'sub', to:'1.1'}, {tag:'新建', kind:'sub', to:'1.2'},
+              {tag:'改用其他方式', kind:'exit', res:'按建议处理，结束本次任务'}],
+    kids:['1.1','1.2','1.3']},
+  '1.1': {title:'找到并读懂要修订的 skill', input:'用户请求',
+    acts:[{t:'在个人 skill 目录、当前项目的 skill 目录和已安装的插件中，查找要修订的 skill', br:[
+            {when:'用户的描述对应多个 skill，或一个都对不上', ask:'列出最接近的候选请用户指认', goText:'重新查找'},
+            {when:'确实没有这个 skill', ask:'告诉用户，并询问是否改为新建', ans:[
+              {when:'用户同意', out:'改为新建'},
+              {when:'用户不同意', out:'不再修订'}]},
+            {when:'找到了', then:'完整读取它的 SKILL.md、引用的文件和脚本，以及同目录下的流程图 `flow.html`（如果有）'}]},
+          {t:'确定要修改的文件', br:[
+            {when:'找到的 skill 位于插件缓存等由别人维护的位置', ask:'说明直接修改会在插件更新时被覆盖，给出“复制到个人 skill 目录后再改”和“仍在原处改”两个选项，推荐前者', goText:'按用户的选择确定'},
+            {when:'它位于个人或项目的 skill 目录', then:'直接修改原文件'}]},
+          {t:'然后把用户的修改要求落到具体行为上：写清这个 skill 现在会怎样、改完应该怎样，并找一个能复现现状的具体请求'}],
+    out:'原 skill 的内容、要修改的文件、现状 → 期望、复现请求',
+    rules:[{t:'只依据读到的原文理解现有 skill，不要凭记忆或摘要', why:'否则容易误判要改的范围'}],
+    outcomes:[{tag:'修订依据就绪', kind:'next', to:'1.3'},
+              {tag:'改为新建', kind:'jump', to:'1.2', res:'改走新建路径', lane:0},
+              {tag:'不再修订', kind:'exit', res:'结束本次任务'}]},
+  '1.2': {title:'确认新 skill 的定位', input:'用户请求',
+    acts:[{t:'在已安装的 skill 中查找用途相近的', br:[
+            {when:'找到了', ask:'说明它们和这次需求的异同，给出“修订已有的”和“新建”两个选项并标出推荐', ans:[
+              {when:'用户选修订', out:'改为修订'},
+              {when:'用户选新建', then:'继续本步'}]},
+            {when:'没有找到', then:'继续本步'}]},
+          {t:'确定新 skill 存放在哪里', br:[
+            {when:'用户已经指明', then:'按用户说的'},
+            {when:'当前项目已有存放 skill 的约定', then:'按约定'},
+            {when:'都没有', ask:'询问用户，推荐只在本项目用的放项目目录，跨项目用的放个人目录', goText:'按回复确定'}]}],
+    out:'确认要新建，以及存放位置',
+    outcomes:[{tag:'定位已确认', kind:'next', to:'1.3'},
+              {tag:'改为修订', kind:'jump', to:'1.1', res:'改走修订路径', lane:1}]},
+  '1.3': {title:'核对需求是否完整', input:'步骤 1.1 或 1.2 的产出、对话和材料',
+    acts:[{t:'对照下面的清单逐项核对。能从对话、材料、项目文件或原 skill 中找到答案的，直接补上，不要拿去问用户', list:[
+            '解决什么问题：这个 skill 要解决的问题，以及没有它时 AI 通常会怎么做错',
+            '什么时候用：谁会在什么情况下用它，哪些相近的请求不该触发它',
+            '输入和交付：它拿到什么输入，交付什么结果，做到什么程度算完成',
+            '具体实例：至少一个真实的输入和期望的结果；修订时还要有能复现现状的请求',
+            '约束：必须遵守或不能做的事，可以使用的工具和环境',
+            '用户参与：哪些地方需要用户提供信息或做确认']},
+          {t:'根据核对结果', br:[
+            {when:'还有会影响流程走向的点不清楚', ask:'把这些点一次性问用户。每个问题说明你目前的理解，给出 2～3 个可选答案并标出推荐项；用户没给实例时，自拟一个放进问题里请用户确认', goText:'补全理解，再核对一遍'},
+            {when:'剩下的都不影响流程走向', then:'按最合理的方式自行补全，记下你的选择', out:'需求明确'}]}],
+    out:'需求摘要',
+    rules:[{t:'提问要集中，一次问清，不要零碎地反复追问'}],
+    outcomes:[{tag:'需求明确', kind:'next', to:'2'}]},
+  '2': {title:'生成或更新流程图', nest:'画的是目标 skill', input:'需求摘要、具体实例；修订时还有原 skill 和已有流程图',
+    acts:[{t:'按 `references/flowchart.md` 的规则，生成或更新目标 skill 的流程图，保存为 skill 目录下的 `flow.html`', br:[
+            {when:'是新建', then:'以实例为线索，从输入一路推到交付结果，画出主线。再挑一两个会走不同路线的情况推一遍，例如输入缺失、中途失败、用户否决，把分支补上'},
+            {when:'是修订', then:'在已有流程图上修改。没有流程图时，先把原 SKILL.md 如实还原成流程图，标出原文含糊或自相矛盾的地方，再只改受影响的部分，并在图上标出改动'}]},
+          {t:'流程图顶部写名称、触发描述、一句话用途，以及步骤 1 得到的需求摘要。每个步骤写清输入、动作、产出、可能的结果和各自的去向。画的时候，主动补全用户没有说到的部分', list:[
+            '每个输入从哪里来，拿不到时怎么办',
+            '动作失败或得到意外结果时去哪里',
+            '需要用户参与的地方，以及用户每种回复的去向',
+            '每个循环回到哪里、什么时候结束。可能反复多次的，写明最多几次，超过后怎么办',
+            '异常结束时告诉用户什么，留下什么']},
+          {t:'补全时遇到拿不准的地方，分两类处理', br:[
+            {when:'是方向性的问题，也就是有几种合理做法、选哪种结果明显不同', ask:'向用户提问：说明问题和取舍，给出 2～3 个建议做法并标出推荐项', goText:'按用户的选择画进图里'},
+            {when:'只是局部细节', then:'自行决定，并在图上标出你的选择，留给用户检查时一并核对'}]},
+          {t:'画完后先自查：每个结果都有去向，每个步骤从开始都走得到，每个循环都有退出条件，用实例沿着图走一遍能到达期望结果。发现问题先改好'},
+          {para:true, ask:'然后把流程图交给用户检查：告诉用户文件位置，概括主线、关键判断和你自行决定的细节；修订时说明改了哪里', ans:[
+            {when:'用户确认', out:'流程图已确认'},
+            {when:'问题出在需求理解上', out:'需求理解有误'},
+            {when:'问题出在流程图本身', then:'按意见修改', goText:'自查后再请用户检查'},
+            {when:'用户要暂停', out:'暂停'}]}],
+    out:'用户确认的 `flow.html`',
+    rules:[{t:'名称用“动词原形 + 对象”，只用小写字母、数字和连字符，如 `fix-bug`', why:'让人看名字就知道它做什么'},
+           {t:'触发描述用第三人称，写成“当用户……时使用”，只写什么时候用，不写怎么做。和已安装的相近 skill 有重叠时，写出能区分的场景'},
+           {t:'会改变走向的规则写成动作里的条件，其余约束写在对应步骤旁边'},
+           {t:'补全以实例和常见变化中真会遇到的情况为限，不为罕见的假想情况添加规则'},
+           {t:'参考资料类 skill 的流程可以很短，不要为了画图编造步骤'}],
+    outcomes:[{tag:'流程图已确认', kind:'next', to:'3'},
+              {tag:'需求理解有误', kind:'back', to:'1.3', res:'纠正理解，更新需求摘要，再修改流程图中受影响的部分，自查后重新请用户检查', lane:0},
+              {tag:'暂停', kind:'exit', res:'保存当前流程图，告诉用户下次从哪里继续，结束本次任务'}]},
+  '3': {title:'按流程图写成 skill', input:'用户确认的流程图；修订时还有原 SKILL.md',
+    acts:[{t:'按用户确认的流程图写出 SKILL.md。frontmatter 的 name 和 description 取自流程图顶部；正文开头用一段话说明这个 skill 做什么、交付什么；然后在“工作流”模块下按流程图逐步写出每个步骤，步骤编号与流程图一致。修订时只改受影响的部分，其余原文保持不变'},
+          {para:true, t:'写约束时，按它要防止的问题选择写法', list:[
+            '防止明知规则仍会违反，就写成明确的禁令，并说明理由',
+            '防止产出的形式走样，就正面写清产出由哪几部分组成、按什么顺序排列',
+            '防止漏掉某个要素，就在模板或清单里给它留出必填项',
+            '行为要视情况而定的，写成以可观察的条件开头的条件句，不要写“除非……”式的例外']},
+          {t:'写完后做两项检查。第一，对照流程图逐步核对，确认每个步骤、分支和去向都能在正文中找到，并且正文里没有图上没有的路径。第二，只看 SKILL.md，用实例走一遍：有子代理时，只把 SKILL.md 和实例的输入交给子代理去执行，观察它走的路线和结果；没有子代理时，自己逐步推演。另外，用一个相近但不该触发的请求检查触发描述。修订时，还要用复现请求确认原问题不再出现，并用一个与改动无关的请求确认原有行为没有被破坏。根据检查结果', br:[
+            {when:'正文与流程图不一致，或者执行时因为正文含糊而走错', then:'修改正文', goText:'再检查一遍'},
+            {when:'发现流程图本身有问题', out:'流程图有问题'},
+            {when:'触发判断有误', then:'修改触发描述，同步到流程图顶部', goText:'再检查一遍'},
+            {when:'检查都通过', out:'检查通过'}]}],
+    out:'SKILL.md、检查结果',
+    rules:[{t:'一级步骤写“步骤 1”，子步骤写“步骤 2.1”，跳转和回退写明目标步骤'},
+           {t:'每个步骤写成连贯的段落，分支用无序列表列出各种情况'},
+           {t:'用指令式语言写清依据什么、做什么、不同情况分别去哪里，需要等待或终止时也写明；循环写明回到哪里、什么时候结束'},
+           {t:'把约束写进它生效的那一步，不要集中堆在开头或末尾'},
+           {t:'不要把并列的条件写成先后步骤，也不要用重复说明和琐碎步骤盖过主线'},
+           {t:'交给子代理检查时，不要附上流程图或你的推理', why:'否则测不出正文本身是否够用'}],
+    outcomes:[{tag:'检查通过', kind:'next', to:'end', res:'向用户交付：说明文件位置、这个 skill 的主线、你在写作中自行做的选择、检查结果和仍待用户决定的事项，然后结束本次任务'},
+              {tag:'流程图有问题', kind:'back', to:'2', res:'修改流程图，经用户确认后再改正文', lane:1}]},
+};
+const TERMS = {
+  start:{title:'开始 · 收到 skill 请求', sub:'用户要新建一个 skill，或修改已有 skill 的触发、流程或规则'},
+  end:{title:'正常结束 · 交付目标 skill', sub:'SKILL.md、flow.html 和检查结果'},
+};
+const ORDER = ['start','1','2','3','end'];
+
+
+/* 简短名称：只用于展示，不进入正文。路径写法：步骤号 → 动作序号 → 分支序号（a=回复分支） */
+const LABELS = {
+  '1': {acts:['收集材料', '判断用户想做什么'],
+        br:{'1.0':'修订已有 skill', '1.1':'新建，但不适合做成 skill', '1.2':'新建，适合做成 skill'},
+        ask:{'1.1':'说明原因，推荐其他做法'},
+        ans:{'1.1.0':'接受建议', '1.1.1':'仍要做成 skill'}},
+  '1.1': {acts:['查找要修订的 skill', '确定要修改的文件', '整理“现状 → 期望”和复现请求'],
+        br:{'0.0':'对不上，或有多个', '0.1':'确实没有', '0.2':'找到了', '1.0':'在插件缓存里', '1.1':'在自己的目录里'},
+        ask:{'0.0':'请用户指认', '0.1':'问是否改为新建', '1.0':'说明会被覆盖，建议复制后再改'},
+        then:{'0.2':'读取 SKILL.md、引用文件和 flow.html'},
+        ans:{'0.1.0':'同意', '0.1.1':'不同意'}},
+  '1.2': {acts:['查找用途相近的 skill', '确定存放位置'],
+        br:{'0.0':'找到了', '0.1':'没有找到', '1.0':'用户已指明', '1.1':'项目有约定', '1.2':'都没有'},
+        ask:{'0.0':'说明异同，问修订还是新建', '1.2':'问放项目目录还是个人目录'},
+        ans:{'0.0.0':'选修订', '0.0.1':'选新建'}},
+  '1.3': {acts:['对照清单核对需求', '看核对结果'],
+        br:{'1.0':'还有影响走向的疑问', '1.1':'其余都清楚'},
+        ask:{'1.0':'一次性提问，每题给 2～3 个选项'},
+        then:{'1.1':'自行补全并记下选择'}},
+  '2': {acts:['生成或更新 flow.html', '写顶部信息，主动补全细节', '处理拿不准的地方', '自查', '请用户检查流程图'],
+        br:{'0.0':'新建', '0.1':'修订', '2.0':'方向性问题', '2.1':'局部细节'},
+        then:{'0.0':'按实例画主线，再推出分支', '0.1':'在原图上改；没有就先还原', '2.1':'自行决定，并在图上标出'},
+        ask:{'2.0':'给 2～3 个建议并推荐'},
+        ans:{'4.0':'确认', '4.1':'需求理解有误', '4.2':'流程图本身有问题', '4.3':'要暂停'}},
+  '3': {acts:['按流程图写 SKILL.md', '按要防止的问题选写法', '做两项检查'],
+        br:{'2.0':'正文有问题', '2.1':'流程图有问题', '2.2':'触发判断有误', '2.3':'都通过'},
+        then:{'2.2':'修改触发描述并同步到流程图'}},
+};
+
+/* skill 包里的资源。status：cited = 正文已引用；proposed = 建议拆分，尚未写进正文
+   usedBy：哪个步骤的第几个动作（从 0 开始）用到它，how 说明怎么用 */
+const RESOURCES = [
+  {path:'references/flowchart.md', type:'reference', title:'流程图规则', status:'cited',
+   purpose:'规定目标 skill 的流程图怎么画：步骤结构、分支写法、去向标记、简短名称和校验项。',
+   outline:['每个步骤写清输入、动作、产出和去向','动作和条件各配一个简短名称','分支按“条件 → 处理 → 去向”书写','去向分为继续、回退、转到、提前结束、终止五类','资源引用的标注方式','自查清单'],
+   usedBy:[{step:'2', act:0, how:'按其中的规则画流程图'}]},
+  {path:'references/decisions.md', type:'reference', title:'是否适合做成 skill', status:'proposed',
+   purpose:'判断一个需求该做成 skill，还是写进项目说明、配 hook 或写成脚本。',
+   outline:['适合做成 skill 的信号','只做一次的任务','只适用于某个项目的约定','事件触发的自动行为','能用脚本或校验强制的约束'],
+   usedBy:[{step:'1', act:1, how:'按其中的标准判断是否适合做成 skill'}]},
+  {path:'references/writing.md', type:'reference', title:'工作流写法', status:'proposed',
+   purpose:'把流程图写成 SKILL.md 正文时的写法规范。目前写在步骤 3 的约束里，建议整体下沉到这里。',
+   outline:['分层步骤编号与跳转写法','段落与分支列表的写法','按要防止的问题选择约束写法','约束写在生效的步骤里'],
+   usedBy:[{step:'3', act:0, how:'按其中的写法写正文'}, {step:'3', act:1, how:'按其中的规则选择约束写法'}]},
+  {path:'scripts/check-flow.js', type:'script', title:'流程图校验', status:'proposed',
+   purpose:'确定性地检查流程图：每个结果都有去向、每个步骤都走得到、每个循环都有退出条件、引用的资源都存在。',
+   outline:['输入：flow.html 中的流程数据','输出：问题清单，没有问题时返回成功'],
+   usedBy:[{step:'2', act:3, how:'运行它完成自查'}, {step:'3', act:2, how:'运行它核对正文与流程图'}]},
+  {path:'assets/flow-template.html', type:'asset', title:'流程图页面模板', status:'proposed',
+   purpose:'流程图的页面模板。画图时只填流程数据，版式和交互由模板提供。',
+   outline:['页面版式与样式','流程数据的填写位置','文字版导出'],
+   usedBy:[{step:'2', act:0, how:'用它生成 flow.html'}]},
+];
+
+const SCENARIOS = {
+  create:{name:'新建 skill', req:'把根据版本变更写发布说明的做法整理成 skill。', path:[
+    ['1','用户要新建一个写发布说明的 skill，适合做成 skill。'],
+    ['1/新建@2','新建，适合做成 skill → 进入步骤 1.2。'],
+    ['1.2','没有找到用途相近的 skill；放进项目的 skill 目录。'],
+    ['1.3','把两点一次性问用户，并自拟 v2.3 的实例请用户确认。'],
+    ['2','画出流程，自查后请用户检查。'],
+    ['2/需求理解有误','用户指出还要给运维人员看 → 回到步骤 1.3。'],
+    ['1.3','需求摘要加上“面向用户和运维两类读者”。'],
+    ['2','加上按读者区分的分支，用户确认。'],
+    ['3','写出 SKILL.md，两项检查都通过。'],
+    ['3/检查通过','交付 write-release-notes。'],
+  ]},
+  revise:{name:'修订 skill', req:'这份发布说明把内部日志调整也列出来了。修改刚才的 skill，只收录用户能感知的变化。', path:[
+    ['1','用户说“修改刚才的 skill”，找到了 write-release-notes。'],
+    ['1/修订','进入步骤 1.1。'],
+    ['1.1','读取原文，整理现状、期望和复现请求。'],
+    ['1.3','清单各项都已明确。'],
+    ['2','在“选取变更”处加分支并标出改动，用户确认。'],
+    ['3','只改这一步，复现和回归检查都通过。'],
+    ['3/检查通过','交付修订后的 skill。'],
+  ]},
+  exit:{name:'提前结束', req:'把之前那个 deploy-app 的 skill 改成先跑测试再部署。', path:[
+    ['1','用户点名了 deploy-app → 修订。'],
+    ['1.1','三个位置都找不到 deploy-app，问用户是否改为新建。'],
+    ['1.1/不再修订','用户不同意 → 结束本次任务。'],
+  ]},
+};
+
+
+const $ = id => document.getElementById(id);
+const kidsOf = item => item.ans || item.br;
+const OFF = kind => ['back','fail','jump','exit'].includes(kind);
+const outcome = (id,tag) => STEPS[id].outcomes.find(o => o.tag === tag);
+function walkBranches(items,visit) {
+  for (const item of items || []) {
+    visit(item);
+    walkBranches(kidsOf(item),visit);
+  }
+}
+function usedTags(id) {
+  const used=new Set();
+  for (const a of STEPS[id].acts) walkBranches(kidsOf(a), b => { if(b.out) used.add(b.out); });
+  return used;
+}
+
+
+function routeText(o){
+  if (o.kind === 'fail' || o.kind === 'exit') return o.res;
+  if (o.to === 'end') return o.res || '结束并交付 ' + TERMS.end.sub;
+  if (o.kind === 'back') return `回到步骤 ${o.to} ${o.res}`;
+  return `进入步骤 ${o.to}`;
+}
+function branchLines(sid, list, ind){
+  return list.map(b => {
+    const p = [], k = kidsOf(b);
+    if (b.then) p.push(b.then);
+    if (b.ask) p.push(b.ans ? `${b.ask}，等待回复` : `${b.ask}，等待回复后${b.goText || '继续'}`);
+    else if (b.goText) p.push(b.goText);
+    if (b.out) p.push(routeText(outcome(sid, b.out)));
+    const line = `${ind}- 如果${b.when}，${p.join('，')}${k ? '：' : '。'}`;
+    return k ? line + '\n' + branchLines(sid, k, ind + '  ') : line;
+  }).join('\n');
+}
+function stepText(sid, level){
+  const s = STEPS[sid]; const paras = []; let buf = '';
+  s.acts.forEach(a => {
+    const sentence = a.ask ? `${a.ask}，等待回复` : a.t, k = kidsOf(a);
+    if (a.para && buf){ paras.push(buf); buf = ''; }
+    if (a.list){ paras.push(buf + sentence + '：\n' + a.list.map(x => `- ${x}。`).join('\n')); buf = ''; }
+    else if (k){ paras.push(buf + sentence + '：\n' + branchLines(sid, k, '')); buf = ''; }
+    else buf += sentence + '。';
+  });
+  const used = usedTags(sid), rest = s.outcomes.filter(o => !used.has(o.tag) && !OFF(o.kind) || !used.has(o.tag) && o.when);
+  if (rest.length === 1 && !rest[0].when){ const tail = `完成后${routeText(rest[0])}。`; if (buf) buf += tail; else paras.push(tail); }
+  if (buf) paras.push(buf);
+  rest.filter(o => o.when).forEach(o => paras.push(`如果${o.when}，${routeText(o)}。`));
+  if (s.rules && s.rules.length) paras.push('要求：\n' + s.rules.map(r => `- ${r.t}${r.why ? '，' + r.why : ''}。`).join('\n'));
+  let out = `${'#'.repeat(level)} 步骤 ${sid}：${s.title}\n\n${paras.join('\n\n')}`;
+  if (s.kids) out += '\n\n' + s.kids.map(k => stepText(k, level + 1)).join('\n\n');
+  return out;
+}
+function skillText(){
+  return [`---\nname: ${FLOW.name}\ndescription: ${FLOW.description}\n---`, `# ${FLOW.name}`, ...FLOW.intro, '## 工作流',
+    ...ORDER.filter(id => STEPS[id]).map(id => stepText(id, 3))].join('\n\n') + '\n';
+}
+const NS='http://www.w3.org/2000/svg';
+function el(tag,cls,...children){
+  const node=document.createElement(tag);
+  if(cls) node.className=cls;
+  node.append(...children.filter(child=>child!=null && child!==false));
+  return node;
+}
+function svg(tag,attrs){
+  const node=document.createElementNS(NS,tag);
+  for(const [key,val] of Object.entries(attrs))node.setAttribute(key,val);
+  return node;
+}
+function icon(name,cls=''){
+  const s=svg('svg',{class:'ic '+cls,'aria-hidden':'true',viewBox:'0 0 24 24'});
+  s.append(svg('use',{href:'#ico-'+name}));
+  return s;
+}
+function button(cls,children,action,attrs={}){
+  const b=el('button',cls,...children);
+  b.type='button';
+  for(const [key,val] of Object.entries(attrs))b.setAttribute(key,val);
+  if(action)b.addEventListener('click',action);
+  return b;
+}
+function rich(text){
+  const f=document.createDocumentFragment();
+  String(text??'').split(/(`[^`]+`)/g).forEach(t=>f.append(t.startsWith('`')?el('code','',t.slice(1,-1)):t));
+  return f;
+}
+const ids=[];
+const stepTree=(id)=>{if(!STEPS[id]||ids.includes(id))return;ids.push(id);for(const sub of STEPS[id].kids||[])stepTree(sub)};
+const roots=ORDER.filter(id=>STEPS[id]);roots.forEach(stepTree);
+const types={reference:['参考资料','book-open'],script:['脚本','square-terminal'],asset:['素材','file-box']};
+const routes={sub:['进入','git-branch'],next:['继续','arrow-down'],jump:['转到','shuffle'],back:['回到','undo-2'],exit:['提前结束','log-out'],fail:['终止','circle-stop'],end:['交付','circle-check'],wait:['等待回复','message-square'],follow:['继续','arrow-down']};
+const labels=(id,field,key)=>LABELS[id]?.[field]?.[key];
+const actId=(id,i)=>'action-'+id+'-'+i;
+const stepId=id=>'step-'+id;
+const tagOf=o=>o.to==='end'?'end':o.kind;
+const allOutcomes=ids.flatMap(id=>STEPS[id].outcomes.map(o=>({id,o})));
+const endOutcomes=allOutcomes.filter(({o})=>['end','exit','fail'].includes(tagOf(o)));
+const targets=new Map(), occurrence=new Map(), localReturns=[];
+const resourceStatus=r=>r.status==='proposed'?'建议拆分':'正文已引用';
+const sourceKeys={'重新查找':0,'补全理解，再核对一遍':0,'自查后再请用户检查':3,'再检查一遍':2};
+const presentation={flow:['工作流','workflow'],files:['文件结构','folder-tree'],text:['文字版','file-text']};
+let view='flow', full=false, scenario='',position=0,flashNode,flashTimer;
+const tabButtons=new Map();
+function addTarget(id,tag,node) {
+  const base=id+'/'+tag, index=(occurrence.get(base)||0)+1;
+  occurrence.set(base,index);
+  const key=index===1?base:base+'@'+index;
+  targets.set(key,node);node.dataset.route=key;
+}
+function validation(){
+  const checks=new Map(['分支结果已定义','去向目标存在','步骤从入口可达','动作有简短名称','资源引用有效'].map(title=>[title,[]]));
+  const [refs,links,reach,names,uses]=checks.values();
+  const edges=new Map();
+  for(const [id,s] of Object.entries(STEPS)){
+    const used=usedTags(id);const exits=[];
+    for(const child of s.kids||[])if(!STEPS[child])links.push('步骤 '+id+' 指向不存在的子步骤 '+child);
+    for(const tag of used)if(!outcome(id,tag))refs.push('步骤 '+id+' 引用了未定义的结果「'+tag+'」');
+    for(const o of s.outcomes){
+      const terminal=['exit','fail'].includes(o.kind);
+      if ((!terminal&&!o.to)||(o.to && o.to!=='end'&&!STEPS[o.to]))links.push('步骤 '+id+' 的「'+o.tag+'」缺少有效目标');
+      if(o.to && (used.has(o.tag)||o.kind==='next'||o.when))exits.push(o.to);
+    }
+    edges.set(id,exits);
+    s.acts.forEach((a,i)=>{if(!labels(id,'acts',i)?.trim())names.push('步骤 '+id+' 的动作 '+(i+1)+' 缺少名称')});
+  }
+  const visited=new Set(),queue=['1'];
+  while(queue.length){const id=queue.pop();if(visited.has(id)||!STEPS[id])continue;visited.add(id);queue.push(...edges.get(id))}
+  for(const id of Object.keys(STEPS))if(!visited.has(id))reach.push('无法从步骤 1 到达步骤 '+id);
+  for(const r of RESOURCES)for(const u of r.usedBy)if(!Number.isInteger(u.act)||!STEPS[u.step]?.acts[u.act])uses.push(r.path+' 引用了不存在的动作 '+u.step+' / '+(u.act+1));
+  return checks;
+}
+function badge(kind,text,action,title){
+  const content=[icon(routes[kind][1]),text];
+  const b=action?button('badge '+kind,content,action):el('span','badge '+kind,...content);
+  if(title)b.title=title;
+  return b;
+}
+function formattedRoute(o){
+  const kind=tagOf(o);
+  return ['end','exit','fail'].includes(kind)?routes[kind][0]:routes[kind][0]+' '+o.to;
+}
+function resultBadge(id,o){
+  if(!o)return badge('fail','结果未定义');
+  const terminal=['exit','fail'].includes(o.kind);
+  const go=terminal?()=>focusNode($('result-'+id+'-'+o.tag)):()=>focusNode($(o.to==='end'?'delivery':stepId(o.to)));
+  return badge(tagOf(o),formattedRoute(o),go,o.res||STEPS[o.to]?.title);
+}
+function disclosure(btn,panel,forced){
+  let manual=false;
+  const sync=()=>{const open=manual||forced();panel.hidden=!open;btn.setAttribute('aria-expanded',String(open));};
+  btn.setAttribute('aria-controls',panel.id);
+  btn.addEventListener('click',()=>{if(!forced()){manual=!manual;sync()}});
+  sync();syncDetails.push(sync);
+}
+const syncDetails=[];
+function setFull(on){full=on;$('full').setAttribute('aria-checked',String(on));document.body.classList.toggle('full',on);syncDetails.forEach(sync=>sync())}
+function chip(r){
+  return button('resource '+r.status,[icon(types[r.type][1]),r.path.split('/').pop()],()=>openResource(r),{title:r.path+' · '+resourceStatus(r)});
+}
+function selectView(key,{reset=false}={}){
+  view=key;
+  for(const [k,tab] of tabButtons){const on=key===k;$(k).hidden=!on;tab.setAttribute('aria-selected',String(on));tab.tabIndex=on?0:-1}
+  $('full').disabled=key!=='flow';$('walkbar').hidden=key!=='flow'||!scenario;
+  $('prev').disabled=!scenario||position===0;$('next').disabled=!scenario||position>=((SCENARIOS[scenario]?.path.length||1)-1);
+  document.title='create-skill · '+presentation[key][0];
+  if(reset)$('reader').scrollTop=0;
+}
+function focusNode(node){
+  if(!node)return;
+  for(const dlg of document.querySelectorAll('dialog[open]'))dlg.close();
+  selectView('flow');node.tabIndex=-1;node.focus({preventScroll:true});node.scrollIntoView({block:'center'});
+  flashNode?.classList.remove('flash');clearTimeout(flashTimer);flashNode=node;node.classList.add('flash');flashTimer=setTimeout(()=>node.classList.remove('flash'),1300);
+  const card=node.closest('.step-card');markNav(card?.dataset.step||'');
+}
+function markNav(id){
+  document.querySelectorAll('[data-nav-step]').forEach(b=>{if(b.dataset.navStep===id)b.setAttribute('aria-current','true');else b.removeAttribute('aria-current')});
+}
+function showSheet(title,ic,content){
+  if($('nav-drawer').open)$('nav-drawer').close();
+  $('sheet-icon').replaceChildren(icon(ic));const heading=el('h2','',title);heading.id='sheet-title';$('sheet-body').replaceChildren(heading,...content);
+  if(!$('sheet').open)$('sheet').showModal();$('sheet').scrollTop=0;
+}
+function openResource(r){
+  const use=r.usedBy.map(u=>button('use',[icon('corner-down-right'),el('span','','步骤 '+u.step+' · 动作 '+(u.act+1)+'　'+(labels(u.step,'acts',u.act)||''),el('small','',u.how)),icon('arrow-up-right')],()=>focusNode($(actId(u.step,u.act)))));
+  const descriptions={reference:'执行到引用动作时，读取其中的规则或资料。',script:'执行脚本，使用它的输出完成检查。',asset:'直接取用资源或填充模板，生成目标文件。'};
+  showSheet(r.title,types[r.type][1],[el('p','sheet-path mono',r.path),el('p','',types[r.type][0]+' · '+(r.status==='proposed'?'建议拆分，尚未写进正文':'正文已引用')),el('h3','','用途'),el('p','',rich(r.purpose)),el('h3','','引用动作'),...use,el('h3','','内容提纲'),el('ul','',...r.outline.map(t=>el('li','',rich(t)))),el('h3','','读取方式'),el('p','',descriptions[r.type])]);
+}
+function showValidation(){
+  const checks=validation();
+  showSheet('结构校验','shield-check',[...checks].flatMap(([title,issues])=>[el('h3','',title),issues.length?el('ul','',...issues.map(s=>el('li','',s))):el('p','',icon('check'),' 通过')]));
+}
+
+
+
+function shortText(parent,short,long){
+  parent.append(rich(short||long));
+  if(short && long && short!==long)parent.append(el('span','extra full-only',rich(long)));
+}
+function branchTable(id,ai,action){
+  const table=el('table','branch-table'),head=el('thead'),body=el('tbody');
+  table.setAttribute('aria-label',(labels(id,'acts',ai)||'动作')+'的分支');
+  head.append(el('tr','',...[(action.ans?'用户回复':'情况'),'处理','去向'].map(t=>el('th','',t))));table.append(head,body);
+  function rows(branches,prefix,depth,reply){
+    branches.forEach((b,i)=>{
+      const key=prefix+'.'+i,row=el('tr',''),condition=el('td'),handling=el('td','handling'),dest=el('td');
+      const wrap=el('div','condition'),name=el('span');wrap.style.setProperty('--depth',depth);
+      if(reply)wrap.append(icon('corner-down-right'));
+      shortText(name,labels(id,reply?'ans':'br',key),b.when);wrap.append(name);condition.append(wrap);
+      if(b.then && b.then!=='继续本步'){const part=el('div');shortText(part,labels(id,'then',key),b.then);handling.append(part)}
+      if(b.ask){const part=el('div','waiting',icon('message-square'),' ');shortText(part,labels(id,'ask',key),b.ask);handling.append(part)}
+      const o=b.out?outcome(id,b.out):null;
+      if(b.out){
+        addTarget(id,b.out,row);dest.append(resultBadge(id,o));
+        if(o?.res){const detail=el('div',handling.hasChildNodes()?'extra':'',rich(o.res));handling.append(detail)}
+        if(o && ['exit','fail'].includes(o.kind))row.id='result-'+id+'-'+o.tag;
+      }else if(kidsOf(b)){
+        dest.append(badge(b.ans?'wait':'follow',b.ans?'等待回复':'见下方分支'));
+      }else if(Object.hasOwn(sourceKeys,b.goText)){
+        const aiTo=sourceKeys[b.goText];dest.append(badge('back',b.goText,()=>focusNode($(actId(id,aiTo)))));
+        localReturns.push({id,ai,aiTo,row,when:labels(id,reply?'ans':'br',key)||b.when});
+      }else{
+        const nextAi=ai+1,defaultOut=STEPS[id].outcomes.find(o=>o.kind==='next'&&!usedTags(id).has(o.tag));
+        if(b.goText)handling.append(el('div','',rich(b.goText)));
+        if(nextAi<STEPS[id].acts.length)dest.append(badge('follow','动作 '+(nextAi+1),()=>focusNode($(actId(id,nextAi)))));
+        else if(defaultOut)dest.append(resultBadge(id,defaultOut));
+        else dest.append(badge('follow','继续本步'));
+      }
+      if(!handling.hasChildNodes())handling.append(el('span','muted','—'));
+      row.append(condition,handling,dest);body.append(row);
+      if(kidsOf(b))rows(kidsOf(b),key,depth+1,!!b.ans);
+    });
+  }
+  rows(kidsOf(action),String(ai),0,!!action.ans);return table;
+}
+function actionRow(id,a,i){
+  const kind=a.ask?'wait':kidsOf(a)?'decide':'plain';
+  const marker=el('span','marker '+kind,el('span','actnum',String(i+1)));
+  marker.title='动作 '+(i+1);
+  const top=el('div','action-top');const heading=button('action-title',[labels(id,'acts',i)||'动作 '+(i+1),icon('chevron-down','chev')]);
+  top.append(heading);if(kind!=='plain')top.append(el('span','rtype '+kind,icon(kind==='wait'?'message-square':'git-fork'),kind==='wait'?'等待用户回复':'判断'));
+  const content=el('div','action-body',top);
+  const fullText=el('p','original',rich(a.t||a.ask));fullText.id='original-'+id+'-'+i;disclosure(heading,fullText,()=>full);content.append(fullText);
+  if(a.list){
+    const list=el('ul','checklist',...a.list.map(t=>el('li','',rich(t))));list.id='list-'+id+'-'+i;
+    const toggle=button('quiet',[icon('list-checks'),'清单 '+a.list.length,icon('chevron-down','chev')]);
+    disclosure(toggle,list,()=>full);top.append(toggle);content.append(list);
+  }
+  for(const r of RESOURCES.filter(r=>r.usedBy.some(u=>u.step===id && u.act===i)))top.append(chip(r));
+  if(kidsOf(a))content.append(branchTable(id,i,a));
+  const row=el('li','action',marker,content);row.id=actId(id,i);return row;
+}
+function io(label,value){return el('div','',el('dt','',label),el('dd','',rich(value)))}
+function stepCard(id){
+  const s=STEPS[id],card=el('article','step-card '+(roots.includes(id)?'top':'child'));
+  card.id=stepId(id);card.dataset.step=id;targets.set(id,card);
+  const heading=el('div','step-heading',el('span','num',id),el('h2','',s.title));
+  card.append(heading,el('dl','io',io('输入',s.input),io('产出',s.out||'新建或修订的处理路径')));
+  if(s.rules?.length){
+    const toggle=button('quiet step-head-actions',[icon('list-checks'),'约束 '+s.rules.length,icon('chevron-down','chev')]);
+    const list=el('ul','rule-list',...s.rules.map(r=>el('li','',rich(r.t+(r.why?'，'+r.why:'')))));list.id='rules-'+id;
+    disclosure(toggle,list,()=>full);heading.append(toggle);card.append(list);
+  }
+  card.append(el('ol','timeline',...s.acts.map((a,i)=>actionRow(id,a,i))));
+  const used=usedTags(id),defaults=s.outcomes.filter(o=>!used.has(o.tag)&&(!OFF(o.kind)||o.when));
+  const foot=el('div','step-footer');
+  if(defaults.length){for(const o of defaults){const item=el('span','default-dest',o.when||o.tag,'　',resultBadge(id,o));addTarget(id,o.tag,item);foot.append(item)}}
+  else if(s.kids){foot.append('按意图分流',...s.outcomes.filter(o=>o.kind==='sub').map(o=>resultBadge(id,o)))}
+  else{const normal=s.outcomes.find(o=>o.kind==='next');if(normal)foot.append(normal.tag,resultBadge(id,normal));else foot.append('按命中的分支结束本步')}
+  card.append(foot);return card;
+}
+const renderedSteps=new Set();
+function stepGroup(id){
+  if(!STEPS[id]||renderedSteps.has(id))return document.createDocumentFragment();
+  renderedSteps.add(id);
+  const s=STEPS[id],group=el('div','step-group',stepCard(id));
+  if(s.kids){const children=el('div','children',el('div','children-label',icon('corner-down-right'),'步骤 '+id+' 的子步骤'));
+    for(const kid of s.kids)children.append(stepGroup(kid));group.append(children)}
+  return group;
+}
+const narrowMap=window.matchMedia('(max-width:580px)');
+function overview(){
+  const narrow=narrowMap.matches;
+  const host=$('overview');
+  const caption=el('div','mapnote',el('span','',icon('route'),el('strong','','主流程')),el('span','','虚线表示回退'));
+  const g=svg('svg',{viewBox:narrow?'0 0 336 319':'0 0 895 165',class:'overview-svg',role:'group','aria-label':'主流程。修订和新建在 1.3 汇合，需求或流程有误时沿虚线返回。'});
+  const defs=svg('defs',{});for(const [key,color] of [['main','var(--muted)'],['back','var(--back)']]){const m=svg('marker',{id:'arr-'+key,viewBox:'0 0 8 8',refX:7,refY:4,markerWidth:5,markerHeight:5,orient:'auto'});m.append(svg('path',{d:'M0 0l8 4-8 4z',fill:color}));defs.append(m)}g.append(defs);
+  function line(d,back=false,arrow=true){g.append(svg('path',{d,class:back?'mapback':'mapwire','stroke-width':1.4,'marker-end':arrow?'url(#arr-'+(back?'back':'main')+')':'none'}))}
+  function text(x,y,t,cls){const n=svg('text',{x,y,class:cls,'text-anchor':'middle','dominant-baseline':'middle'});n.textContent=t;return n}
+  function node(id,x,y,w,label,cls=''){
+    const n=svg('g',{class:'maplink '+cls,role:'button',tabindex:0,'aria-label':label});n.append(svg('rect',{x,y,width:w,height:32,rx:7}),text(x+w/2,y+16,label,'mapname'));
+    const go=()=>focusNode($(id==='end'?'delivery':stepId(id)));n.addEventListener('click',go);n.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}});g.append(n);
+  }
+  if(narrow){
+    line('M152 40V50H84V61');line('M152 50H226V61');
+    line('M84 93V105H152',false,false);line('M226 93V105H152',false,false);line('M152 105V117');
+    line('M152 149V173');line('M152 205V229');line('M152 261V281');
+    line('M210 189H251V133H210',true);line('M94 245H53V189H94',true);
+    g.append(text(265,160,'需求理解有误','maplabel'),text(52,217,'流程图有误','maplabel'));
+    node('1',94,8,116,'1  判断需求','primary');node('1.1',28,61,112,'1.1  查找原 skill');node('1.2',170,61,112,'1.2  确认新建');
+    node('1.3',94,117,116,'1.3  核对需求');node('2',94,173,116,'2  画图并确认');node('3',94,229,116,'3  编写与验证');node('end',109,281,86,'交付','done');
+  }else{
+  line('M138 92H156V61H179');line('M156 92V120H179');
+  line('M299 61H322V92H344');line('M299 120H322V92',false,false);
+  line('M479 92H514');line('M649 92H682');line('M799 92H823');
+  line('M580 76V32H410V75',true);line('M740 108V140H578V109',true);
+  g.append(text(495,23,'需求理解有误','maplabel'),text(660,151,'流程图有误','maplabel'));
+  node('1',22,76,116,'1  判断需求','primary');node('1.1',179,45,120,'1.1  查找原 skill');node('1.2',179,104,120,'1.2  确认新建');node('1.3',344,76,135,'1.3  核对需求');node('2',514,76,135,'2  画图并确认');node('3',682,76,117,'3  编写与验证');node('end',823,76,57,'交付','done');
+  }
+  host.replaceChildren(caption,el('div','overview-scroll',g));
+}
+function renderWorkflow(){
+  overview();narrowMap.addEventListener('change',overview);
+  // Child cards belong to their parent even when an execution path skips a sibling.
+  const host=$('cards');for(const [i,id] of roots.entries()){
+    if(i)host.append(el('div','connector',icon('arrow-down'),i===1?'需求明确后':'用户确认流程图后'));
+    host.append(stepGroup(id));
+  }
+  const finish=el('div','finish',icon('circle-check'),el('b','','交付目标 skill'),el('span','',TERMS.end.sub));finish.id='delivery';
+  host.append(el('div','connector',icon('arrow-down'),'检查通过'),finish);
+  $('flow-count').textContent=roots.length+' 个阶段 / '+ids.length+' 个步骤';
+}
+
+
+
+function renderIndex(nav){
+  function group(title){const g=el('div','navgroup',el('h2','',title));nav.append(g);return g}
+  function item(parent,parts,go,sub=''){const b=button('navitem '+sub,parts,go);parent.append(b);return b}
+  const tree=group('步骤');
+  for(const id of ids){const b=item(tree,[el('span','navnum',id),STEPS[id].title],()=>focusNode($(stepId(id))),roots.includes(id)?'':'sub');b.dataset.navStep=id}
+  const exits=group('终点');
+  for(const {id,o} of [...endOutcomes].sort((a,b)=>Number(b.o.to==='end')-Number(a.o.to==='end'))){
+    const end=o.to==='end';item(exits,[icon(routes[tagOf(o)][1]),end?'交付目标 skill':o.tag,el('span','meta',id)],()=>focusNode(end?$('delivery'):targets.get(id+'/'+o.tag)));
+  }
+  if(!endOutcomes.some(x=>x.o.kind==='fail'))exits.append(el('p','navempty','当前流程没有终止分支'));
+  const loops=group('回退与转到');
+  for(const {id,o} of allOutcomes.filter(({o})=>['jump','back'].includes(o.kind)))item(loops,[icon(routes[o.kind][1]),o.tag,el('span','meta',id+' → '+o.to)],()=>focusNode(targets.get(id+'/'+o.tag)));
+  for(const {id,ai,aiTo,row,when} of localReturns)item(loops,[icon('rotate-ccw'),when,el('span','meta',id+' / '+(ai+1)+'→'+(aiTo+1))],()=>focusNode(row),'local');
+  const resources=group('资源');
+  for(const r of RESOURCES)item(resources,[icon(types[r.type][1]),el('span','mono filename',r.path)],()=>openResource(r));
+}
+function fileView(){
+  const host=$('file-data');const tree=el('div','tree');
+  tree.append(button('tree-row',[icon('file-text'),el('b','mono','SKILL.md'),el('span','meta','正文')],()=>selectView('text',{reset:true})));
+  for(const [type,dir] of Object.entries({reference:'references/',script:'scripts/',asset:'assets/'})){
+    tree.append(el('div','tree-row',icon('folder'),el('b','mono',dir)));
+    for(const r of RESOURCES.filter(r=>r.type===type))tree.append(button('tree-row file',[icon(types[type][1]),el('span','mono',r.path.split('/').pop()),el('span','meta',resourceStatus(r))],()=>openResource(r)));
+  }
+  const matrix=el('table','matrix'),head=el('thead'),body=el('tbody');matrix.setAttribute('aria-label','资源与步骤的引用矩阵');
+  head.append(el('tr','',el('th','','资源'),...ids.map(id=>el('th','','步骤 '+id))));matrix.append(head,body);
+  for(const r of RESOURCES){
+    const row=el('tr','',el('th','',chip(r)));
+    for(const id of ids){const used=r.usedBy.filter(u=>u.step===id),cell=el('td');
+      if(used.length)for(const u of used)cell.append(button('cell',[String(u.act+1)],()=>focusNode($(actId(id,u.act))),{title:'动作 '+(u.act+1)+' · '+u.how,'aria-label':r.title+'，步骤 '+id+'，动作 '+(u.act+1)}));
+      else cell.append(el('span','muted','—'));row.append(cell)}
+    body.append(row);
+  }
+  host.append(el('h2','section-heading','包目录'),tree,el('h2','section-heading','资源 × 步骤'),el('p','file-note','数字是动作序号，可直接定位。虚线标记建议拆分的资源。'),el('div','table-scroll',matrix));
+}
+function applyWalk(scroll=true){
+  const host=$('reader'),bar=$('walkbar');host.classList.toggle('walking',!!scenario);bar.hidden=!scenario||view!=='flow';
+  host.querySelectorAll('.visited,.current,.passed').forEach(n=>n.classList.remove('visited','current','passed'));
+  $('prev').disabled=!scenario||position===0;$('next').disabled=!scenario||position>=((SCENARIOS[scenario]?.path.length||1)-1);
+  if(!scenario){bar.replaceChildren();return}
+  const sample=SCENARIOS[scenario],path=sample.path;
+  for(const [key] of path.slice(0,position+1)){
+    const seen=targets.get(key);if(!seen)continue;
+    seen.closest('.step-card')?.classList.add('visited');
+    if(key.includes('/'))seen.classList.add('passed');
+  }
+  const [key,why]=path[position],target=targets.get(key),card=target?.closest('.step-card');
+  bar.replaceChildren(el('div','walk-caption',sample.name+' · '+(position+1)+' / '+path.length+'　'+sample.req),el('div','',el('b','','本例'),why));
+  if(target&&card){card.classList.add('visited','current');if(key.includes('/'))target.classList.add('current');markNav(card.dataset.step);
+    if(scroll){const where=key.includes('/')?target:card;where.scrollIntoView({block:key.includes('/')?'center':'start'})}}
+}
+function move(delta){
+  if(!scenario)return;const next=Math.min(Math.max(position+delta,0),SCENARIOS[scenario].path.length-1);
+  if(position!==next){position=next;selectView('flow');applyWalk()}
+}
+function applyTheme(value,save){
+  const theme=['system','light','dark'].includes(value)?value:'system';
+  document.documentElement.dataset.theme=theme;$('theme').value=theme;
+  $('theme-icon').replaceChildren(icon({system:'monitor',light:'sun',dark:'moon'}[theme]));
+  if(save){try{localStorage.setItem('autome-codex-theme',theme)}catch{}}
+}
+function setup(){
+  document.querySelectorAll('[data-icon]').forEach(n=>n.append(icon(n.dataset.icon)));
+  $('name').textContent=FLOW.name;$('trigger').textContent=FLOW.description;
+  for(const [key,[label,ic]] of Object.entries(presentation)){
+    const b=button('tab',[icon(ic),label],()=>selectView(key,{reset:true}),{id:'tab-'+key,role:'tab','aria-controls':key});
+    $('tabs').append(b);tabButtons.set(key,b);
+  }
+  $('tabs').addEventListener('keydown',e=>{
+    const keys=[...tabButtons.keys()];let i=keys.indexOf(view);
+    if(e.key==='ArrowRight')i=(i+1)%keys.length;else if(e.key==='ArrowLeft')i=(i+keys.length-1)%keys.length;else if(e.key==='Home')i=0;else if(e.key==='End')i=keys.length-1;else return;
+    e.preventDefault();e.stopPropagation();selectView(keys[i],{reset:true});tabButtons.get(keys[i]).focus();
+  });
+  renderWorkflow();renderIndex($('index'));renderIndex($('mobile-index'));fileView();
+  const issues=[...validation().values()].flat();
+  $('status').append(icon(issues.length?'circle-alert':'shield-check'),issues.length?issues.length+' 个结构问题':'结构校验通过');$('status').classList.toggle('bad',!!issues.length);
+  $('status').onclick=showValidation;
+  if(issues.length){try{$('markdown').textContent=skillText()}catch{$('markdown').textContent='流程数据存在错误，请查看结构校验。'}}else $('markdown').textContent=skillText();
+  $('full').onclick=()=>setFull(!full);
+  for(const [id,s] of Object.entries(SCENARIOS))$('scenario').add(new Option(s.name,id));
+  $('scenario').onchange=()=>{scenario=$('scenario').value;position=0;selectView('flow');applyWalk();if(scenario)$('next').focus({preventScroll:true})};
+  $('prev').onclick=()=>move(-1);$('next').onclick=()=>move(1);
+  document.addEventListener('keydown',e=>{
+    if(!scenario||view!=='flow'||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey||document.querySelector('dialog[open]')||e.target.closest('input,select,textarea,[contenteditable="true"],[role="tablist"]'))return;
+    if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();move(e.key==='ArrowLeft'?-1:1)}
+  });
+  $('menu').onclick=()=>$('nav-drawer').showModal();
+  for(const d of document.querySelectorAll('dialog')){
+    d.querySelector('[data-close]').onclick=()=>d.close();
+    d.addEventListener('click',e=>{if(e.target!==d)return;const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close()});
+  }
+  applyTheme(document.documentElement.dataset.theme,false);$('theme').onchange=()=>applyTheme($('theme').value,true);
+  selectView(['files','text'].includes(location.hash.slice(1))?location.hash.slice(1):'flow');applyWalk(false);markNav('1');
+}
+setup();
+
+
+</script></body></html>
+

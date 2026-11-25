@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>create-skill 执行流程</title>
+<style>
+:root{
+  --bg:#f6f7f5; --panel:#ffffff; --ink:#1d2a22; --muted:#5f6e65; --line:#d6ded8;
+  --green:#2f7d4f; --green-ink:#1f5c39; --green-soft:#e8f4ec; --term:#2f7d4f;
+  --kids:#f2f5f2; --rule-bg:#f8faf8; --band:#f1efe9;
+  --amber:#a8670a; --amber-soft:#fdf3e1;
+  --red:#b4372f; --red-soft:#fbe8e6;
+  --blue:#2d5f9a; --blue-soft:#e6eef8;
+  --violet:#6a4fb0; --violet-soft:#efeafb;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 3px 10px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111613; --panel:#18201b; --ink:#e2eae4; --muted:#9aaa9f; --line:#2e3a32;
+    --green:#5bbd82; --green-ink:#a3dcb8; --green-soft:#1a2c21; --term:#2b7448;
+    --kids:#141b16; --rule-bg:#1b241e; --band:#1c1b17;
+    --amber:#e2a24c; --amber-soft:#2d2414; --red:#e8776d; --red-soft:#351b19;
+    --blue:#82abe0; --blue-soft:#1a2534; --violet:#b39df0; --violet-soft:#241f33; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111613; --panel:#18201b; --ink:#e2eae4; --muted:#9aaa9f; --line:#2e3a32;
+  --green:#5bbd82; --green-ink:#a3dcb8; --green-soft:#1a2c21; --term:#2b7448;
+  --kids:#141b16; --rule-bg:#1b241e; --band:#1c1b17;
+  --amber:#e2a24c; --amber-soft:#2d2414; --red:#e8776d; --red-soft:#351b19;
+  --blue:#82abe0; --blue-soft:#1a2534; --violet:#b39df0; --violet-soft:#241f33; --shadow:none;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.6 "PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif}
+.page{max-width:1240px;margin:0 auto;padding:28px 24px 80px}
+h1{font-size:24px;margin:0 0 4px}
+.lead{color:var(--muted);margin:0 0 14px;max-width:940px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 16px}
+.howto{display:grid;grid-template-columns:1.2fr 1fr;gap:8px 28px;font-size:13px}
+.howto h2{font-size:13.5px;margin:0 0 4px}
+.howto ul{margin:0;padding-left:18px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.sw-line{display:inline-block;width:26px;vertical-align:middle;margin-right:5px;border-top:2px solid var(--green)}
+.sw-line.back{border-top:2px dashed var(--amber)} .sw-line.fail{border-top-color:var(--red)}
+
+/* 顶部工具条 */
+.bar{position:sticky;top:0;z-index:10;background:var(--bg);padding:10px 0;border-bottom:1px solid var(--line);margin-top:14px}
+.bar-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.bar-top .lbl{font-weight:650;margin-left:6px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{border:0;border-radius:0}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:4px 12px}
+button.on{background:var(--blue);border-color:var(--blue);color:#fff}
+button:disabled{opacity:.4;cursor:default}
+.valid{font-size:12.5px;padding:2px 10px;border-radius:999px;border:1px solid var(--green);color:var(--green-ink);background:var(--green-soft)}
+.valid.bad{border-color:var(--red);color:var(--red);background:var(--red-soft)}
+.scen-detail{display:none;margin-top:8px}
+.bar.active .scen-detail{display:block}
+.req{color:var(--muted)} .req q{color:var(--ink);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0;align-items:center}
+.chip{font-size:12px;padding:1px 8px 1px 3px;border-radius:999px;border:1px solid var(--line);background:var(--panel);cursor:pointer}
+.chip i{font-style:normal;display:inline-block;min-width:16px;height:16px;line-height:16px;text-align:center;border-radius:999px;background:var(--blue-soft);color:var(--blue);font-size:10.5px;font-weight:700;margin-right:4px}
+.chip.done{border-color:var(--blue);color:var(--blue)}
+.chip.cur{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip.cur i{background:#fff}
+.arrow{color:var(--muted);font-size:11px}
+.now{background:var(--blue-soft);border-radius:8px;padding:6px 10px}
+.issues{margin:8px 0 0;padding:8px 12px 8px 28px;background:var(--red-soft);border-radius:8px;color:var(--red);display:none}
+
+/* 布局 */
+.layout{position:relative;display:grid;grid-template-columns:760px 52px 272px 1fr;margin-top:14px}
+.main{grid-column:1;position:relative;z-index:1}
+.band{grid-column:3;position:relative;background:var(--band);border-radius:14px;border:1px solid var(--line)}
+#wires{position:absolute;left:0;top:0;pointer-events:none;z-index:2;overflow:visible}
+#labels{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;z-index:3}
+.col-hd{font-size:12.5px;color:var(--muted);font-weight:650;border-bottom:2px solid var(--line);padding-bottom:4px}
+.band-hd{padding:10px 12px 8px;border-bottom:1px solid var(--line)}
+.band-hd b{display:block;font-size:13.5px}
+.band-hd .sum{font-size:12px;color:var(--muted)}
+.band-hd .sum span{margin-right:10px}
+
+.term-wrap{display:flex;justify-content:center;margin-top:56px}
+.term-wrap.first{margin-top:18px}
+.term{background:var(--term);color:#fff;border-radius:999px;padding:9px 30px;text-align:center;position:relative;box-shadow:var(--shadow);scroll-margin:170px}
+.term b{display:block;font-size:15.5px}
+.term .sub{font-size:12.5px;opacity:.92}
+
+/* 步骤 */
+.step{border:1.5px solid var(--green);border-radius:14px;background:var(--panel);margin-top:60px;box-shadow:var(--shadow);overflow:hidden;scroll-margin:170px}
+.step > .hd{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:8px 14px;background:var(--green-soft);border-bottom:1px solid var(--line)}
+.sno{font-weight:700;font-size:12.5px;color:#fff;background:var(--green);border-radius:6px;padding:1px 8px;white-space:nowrap}
+.ttl{font-weight:650;font-size:15px}
+.tag-nest{font-size:11.5px;border-radius:999px;padding:0 8px;background:var(--blue-soft);color:var(--blue);border:1px solid var(--blue);white-space:nowrap}
+.bd{display:grid;grid-template-columns:1.45fr 1fr}
+.bd.norules{grid-template-columns:1fr}
+.io{padding:9px 14px 10px;font-size:13.5px}
+.io .row{display:grid;grid-template-columns:34px 1fr;gap:8px;margin-bottom:3px}
+.io .k{color:var(--muted);font-weight:650}
+.io .out{font-weight:600;color:var(--green-ink)}
+.acts{list-style:none;margin:0;padding:0}
+.acts > li{margin-bottom:4px}
+.an{display:inline-block;width:18px;color:var(--green-ink);font-weight:700}
+.br{list-style:none;margin:2px 0 2px 18px;padding:0 0 0 12px;border-left:2px solid var(--line)}
+.br li{margin:2px 0}
+.when{color:var(--ink);font-weight:650}
+.when::before{content:"如果 ";font-weight:500;color:var(--muted)}
+.ask{background:var(--amber-soft);border:1px dashed var(--amber);border-radius:6px;padding:0 6px;color:var(--ink)}
+.ask::before{content:"👤 问用户并等待 ";color:var(--amber);font-weight:700}
+.prop{font-size:11px;border:1px solid var(--amber);color:var(--amber);border-radius:999px;padding:0 7px;margin-left:6px;white-space:nowrap;font-weight:600}
+.go{color:var(--green-ink);font-weight:600}
+.rules{padding:9px 14px 10px;background:var(--rule-bg);border-left:1px solid var(--line);font-size:13px}
+.rules h5{margin:0 0 3px;font-size:12px;color:var(--muted)}
+.rules ul{margin:0;padding-left:16px}
+.rules li{margin-bottom:5px;line-height:1.5}
+.why{display:block;color:var(--muted);font-size:11.5px;line-height:1.4}
+
+/* 结果标签 */
+.tg{display:inline-block;font-size:12px;font-weight:700;border-radius:6px;padding:0 7px;border:1.5px solid;white-space:nowrap;line-height:1.55}
+.tg.next,.tg.sub{color:var(--green-ink);border-color:var(--green);background:var(--green-soft)}
+.tg.back{color:var(--amber);border-color:var(--amber);background:var(--amber-soft)}
+.tg.fail{color:var(--red);border-color:var(--red);background:var(--red-soft)}
+.tg.jump{color:var(--violet);border-color:var(--violet);background:var(--violet-soft)}
+.tg.exit{color:var(--blue);border-color:var(--blue);background:var(--blue-soft)}
+.tg::before{content:"◆ "}
+.outs{border-top:1px solid var(--line);padding:6px 0 6px 14px;background:var(--rule-bg)}
+.outs h5{margin:0 0 3px;font-size:12px;color:var(--muted)}
+.orow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:3px 14px 3px 0;font-size:13px;position:relative;scroll-margin:170px}
+.orow .cond{color:var(--muted)}
+.orow .dest{font-weight:650;white-space:nowrap}
+.orow .dest.next,.orow .dest.sub{color:var(--green-ink)}
+.orow .dest.back{color:var(--amber)} .orow .dest.fail{color:var(--red)} .orow .dest.jump{color:var(--violet)} .orow .dest.exit{color:var(--blue)}
+
+.kids{display:flex;flex-direction:column;gap:46px;padding:64px 16px 18px 44px;background:var(--kids);border-top:1px dashed var(--line)}
+.kids .step{margin-top:0}
+.lst{margin:3px 0 3px 18px;padding-left:16px}
+.lst li{margin:1px 0}
+.io code,.rules code,.result code,.meta code{font-size:12.5px;background:var(--rule-bg);border:1px solid var(--line);padding:0 4px;border-radius:4px}
+
+/* 分支结果列 */
+.result{position:absolute;z-index:3;left:12px;right:12px;border:1.5px solid var(--amber);border-radius:10px;padding:7px 11px;background:var(--panel);font-size:12.8px;scroll-margin:170px}
+.result.fail{border-color:var(--red);background:var(--red-soft);border-radius:16px}
+.result.exit{border-color:var(--blue);background:var(--blue-soft);border-radius:16px}
+.result.jump{border-color:var(--violet);background:var(--violet-soft)}
+.result .from{float:right;color:var(--muted);font-size:11px;font-weight:600}
+.result .rk{margin-top:4px;font-weight:700}
+.result.back .rk{color:var(--amber)} .result.fail .rk{color:var(--red)} .result.exit .rk{color:var(--blue)} .result.jump .rk{color:var(--violet)}
+.result .cd{color:var(--muted)}
+.goto{display:inline-block;margin-top:4px;font-size:12px;font-weight:650;border-radius:6px;padding:0 8px;background:var(--panel);border:1px solid var(--amber);color:var(--amber);cursor:pointer}
+.goto.jump{border-color:var(--violet);color:var(--violet)}
+
+/* 走查高亮 */
+.note{display:none;margin-top:6px;background:var(--blue-soft);border-left:3px solid var(--blue);padding:5px 9px;border-radius:6px;font-size:12.8px;color:var(--ink);grid-column:1/-1}
+.note::before{content:"本例：";font-weight:700;color:var(--blue)}
+.cur-el > .note,.step.cur-el > .bd > .io > .note{display:block}
+.cur-el{outline:3px solid var(--blue);outline-offset:2px}
+.orow.cur-el{outline-offset:-2px;border-radius:6px}
+.visits{display:inline-flex;gap:3px;margin-left:auto}
+.visits:empty{display:none}
+.visits span{background:var(--blue);color:#fff;border-radius:999px;min-width:20px;height:20px;font-size:11px;font-weight:700;display:grid;place-items:center;padding:0 5px}
+.result .visits,.term .visits{position:absolute;top:-10px;right:-8px}
+.orow .visits{position:absolute;right:120px;top:3px}
+.layout.scen .step:not(.visited),.layout.scen .result:not(.visited),.layout.scen .term:not(.visited){opacity:.35}
+.layout.scen .orow:not(.visited){opacity:.45}
+.flash{animation:flash 1.2s}
+@keyframes flash{0%,60%{outline:3px solid var(--amber);outline-offset:3px}100%{outline-color:transparent}}
+
+.w{fill:none;stroke-width:2;stroke-linejoin:round}
+.w.main{stroke:var(--green)}
+.w.back{stroke:var(--amber);stroke-dasharray:6 4}
+.w.c-back{stroke:var(--amber);stroke-width:1.6}
+.w.c-fail{stroke:var(--red);stroke-width:1.6}
+.w.jump{stroke:var(--violet);stroke-dasharray:6 4}
+.w.c-jump{stroke:var(--violet);stroke-width:1.6}
+.w.c-exit{stroke:var(--blue);stroke-width:1.6}
+.mk-main{fill:var(--green)}.mk-back{fill:var(--amber)}.mk-fail{fill:var(--red)}.mk-jump{fill:var(--violet)}.mk-exit{fill:var(--blue)}
+.elabel{position:absolute;transform:translate(-50%,-50%);background:var(--kids);font-size:12px;white-space:nowrap}
+.elabel.left{transform:translate(0,-50%)}
+
+.meta{margin-top:14px;display:grid;gap:4px;font-size:13.5px}
+.meta .mk{display:inline-block;width:64px;color:var(--muted);font-weight:650}
+.meta code{font-size:13.5px}
+body.text .meta{display:none}
+/* 文本视图 */
+#textView{display:none;margin-top:14px}
+.tv-hd{display:flex;align-items:center;gap:10px;margin-bottom:8px;color:var(--muted);font-size:13px}
+#wf{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 20px;white-space:pre-wrap;font:13.5px/1.75 "SF Mono","Menlo","PingFang SC",monospace;margin:0;max-width:960px}
+body.text #textView{display:block}
+body.text #graphView,body.text .scen-only{display:none}
+
+@media (max-width:1180px){
+  .howto{grid-template-columns:1fr}
+  .layout{grid-template-columns:1fr}
+  .main,.band{grid-column:1}
+  .band{margin-top:28px}
+  .result{position:static;margin:10px 12px}
+  .bd{grid-template-columns:1fr}
+  .rules{border-left:0;border-top:1px solid var(--line)}
+  .kids{flex-direction:column;padding-top:16px}
+  #wires,#labels{display:none}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>create-skill 执行流程</h1>
+  <p class="lead">create-skill 自己怎么工作：从收到“新建或修订一个 skill”的请求，到交付目标 skill。流程图和工作流文本由同一份数据生成，切换视图可以对照。</p>
+
+  <div class="box howto">
+    <div>
+      <h2>每个步骤都是同一个结构</h2>
+      <ul>
+        <li><b>输入</b> → 编号动作 ①②③（可以直接执行的指令）→ <b>产出</b></li>
+        <li>动作里的 <span class="when">条件</span> 是分支；<span class="ask" style="font-size:12px">内容</span> 是等用户回复，回复不同就走不同分支</li>
+        <li>分支要么留在步骤内（如“回到 ①”），要么得出一个<b>结果标签</b> <span class="tg back">标签</span></li>
+        <li>步骤底部的“结果”列出这一步所有可能的标签和去向</li>
+      </ul>
+    </div>
+    <div>
+      <h2>颜色与位置</h2>
+      <div class="legend">
+        <span><span class="tg next">继续</span> 进入下一步或子步骤</span>
+        <span><span class="tg back">回退</span> 回到前面的步骤</span>
+        <span><span class="tg jump">转到</span> 改走另一条路径</span>
+        <span><span class="tg exit">提前结束</span> 正常地提前结束</span>
+        <span><span class="tg fail">终止</span> 异常结束</span>
+      </div>
+      <div class="legend" style="margin-top:6px">
+        <span><span class="sw-line"></span>主线</span><span><span class="sw-line back"></span>回退</span><span><span class="sw-line" style="border-top:2px dashed var(--violet)"></span>转到</span><span><span class="sw-line fail"></span>终止</span>
+      </div>
+      <p style="margin:6px 0 0;color:var(--muted)">离开主线的标签（回退、转到、提前结束、终止）会汇总到右侧“分支结果”列，并与产生它的结果行对齐。右栏“约束”只放不改变走向的要求；会改变走向的规则已经写成动作里的条件。</p>
+    </div>
+  </div>
+
+  <div class="bar" id="bar">
+    <div class="bar-top">
+      <span class="seg"><button data-v="graph" class="on">流程图</button><button data-v="text">工作流文本</button></span>
+      <span class="valid" id="valid"></span>
+      <span class="scen-only lbl">示例走查：</span>
+      <span class="scen-only" id="scenBtns"></span>
+      <span style="flex:1"></span>
+      <span class="scen-only"><button id="prev">◀ 上一步</button> <button id="next">下一步 ▶</button></span>
+    </div>
+    <ul class="issues" id="issues"></ul>
+    <div class="scen-detail scen-only">
+      <div class="req">请求：<q id="reqText"></q></div>
+      <div class="chips" id="chips"></div>
+      <div class="now" id="nowText"></div>
+    </div>
+  </div>
+
+  <div class="box meta" id="meta"></div>
+  <div id="graphView">
+    <div class="layout" id="layout">
+      <svg id="wires"></svg>
+      <div id="labels"></div>
+      <div class="main" id="main"></div>
+      <div class="band" id="band"></div>
+    </div>
+  </div>
+  <div id="textView">
+    <div class="tv-hd">这是完整的 SKILL.md 文字版，由流程图的同一份数据串成。<button id="copy">复制</button></div>
+    <pre id="wf"></pre>
+  </div>
+</div>
+
+<script>
+/* =================== 流程数据（唯一来源） ===================
+ 每一句都按 skill 正文的成品来写，文字版只负责把它们串起来。
+ 动作：{t:指令句, br:[条件分支], list:[清单项], para:另起一段} 或 {ask:要问用户的话, ans:[用户回复分支]}
+ 分支：{when:条件, then:补充动作, ask:问用户, goText:等待或重做后做什么, out:结果标签, br/ans:下一层}
+ 结果：{tag, kind, to, res, when, lane}
+   kind：sub 进入子步骤 · next 继续 · jump 转到其他步骤 · back 回退 · exit 提前结束 · fail 异常终止
+   未被分支引用的结果，是“动作做完后”的默认去向。
+*/
+const FLOW = {
+  name:'create-skill',
+  description:'当用户需要创建新的 skill，或修改已有 skill 的触发条件、执行流程或规则时使用。',
+  intro:['把用户的需求或一个已有的 skill，做成 Agent 能直接照着执行的 skill。先弄清用户真正要什么，再画出 skill 的流程图请用户确认，最后按流程图写成 SKILL.md 并检查。用户确认过的流程图是唯一依据：正文与流程图不一致时，以流程图为准。',
+         '用户给出的通常只是一条主线，你要把它补成一份完整、可执行的 skill。每一步要写清：从哪里拿输入，可能出现哪些情况，每种情况去哪里，哪里需要用户参与，什么时候结束。你补出来的内容要明确标出来，让用户能看到、能核对，不要等用户逐条指出。'],
+};
+const STEPS = {
+  '1': {title:'明确要开发什么样的 skill', input:'用户请求、相关对话和用户提供的材料',
+    acts:[{t:'先收集材料：读完用户的请求和相关对话，用户提供的文档、示例和现有做法也要完整读取'},
+          {t:'然后判断用户的真实意图', br:[
+            {when:'用户要修订已有的 skill（点名了某个 skill、给出了路径，或说“刚才那个”）', out:'修订'},
+            {when:'用户要新建，但这个需求不适合做成 skill', ask:'向用户说明原因并推荐更合适的做法', ans:[
+              {when:'用户接受建议', out:'改用其他方式'},
+              {when:'用户仍要做成 skill', out:'新建'}]},
+            {when:'用户要新建，并且适合做成 skill', out:'新建'}]}],
+    rules:[{t:'以下需求不适合做成 skill：只做一次的任务，直接完成即可；只适用于某个项目的约定，写进项目说明文件，如 CLAUDE.md 或 AGENTS.md；需要在某个事件发生时自动执行的行为，用 hook 配置；能用脚本或校验规则强制执行的机械约束，写成脚本或校验'}],
+    outcomes:[{tag:'修订', kind:'sub', to:'1.1'}, {tag:'新建', kind:'sub', to:'1.2'},
+              {tag:'改用其他方式', kind:'exit', res:'按建议处理，结束本次任务'}],
+    kids:['1.1','1.2','1.3']},
+  '1.1': {title:'找到并读懂要修订的 skill', input:'用户请求',
+    acts:[{t:'在个人 skill 目录、当前项目的 skill 目录和已安装的插件中，查找要修订的 skill', br:[
+            {when:'用户的描述对应多个 skill，或一个都对不上', ask:'列出最接近的候选请用户指认', goText:'重新查找'},
+            {when:'确实没有这个 skill', ask:'告诉用户，并询问是否改为新建', ans:[
+              {when:'用户同意', out:'改为新建'},
+              {when:'用户不同意', out:'不再修订'}]},
+            {when:'找到了', then:'完整读取它的 SKILL.md、引用的文件和脚本，以及同目录下的流程图 `flow.html`（如果有）'}]},
+          {t:'确定要修改的文件', br:[
+            {when:'找到的 skill 位于插件缓存等由别人维护的位置', ask:'说明直接修改会在插件更新时被覆盖，给出“复制到个人 skill 目录后再改”和“仍在原处改”两个选项，推荐前者', goText:'按用户的选择确定'},
+            {when:'它位于个人或项目的 skill 目录', then:'直接修改原文件'}]},
+          {t:'然后把用户的修改要求落到具体行为上：写清这个 skill 现在会怎样、改完应该怎样，并找一个能复现现状的具体请求'}],
+    out:'原 skill 的内容、要修改的文件、现状 → 期望、复现请求',
+    rules:[{t:'只依据读到的原文理解现有 skill，不要凭记忆或摘要', why:'否则容易误判要改的范围'}],
+    outcomes:[{tag:'修订依据就绪', kind:'next', to:'1.3'},
+              {tag:'改为新建', kind:'jump', to:'1.2', res:'改走新建路径', lane:0},
+              {tag:'不再修订', kind:'exit', res:'结束本次任务'}]},
+  '1.2': {title:'确认新 skill 的定位', input:'用户请求',
+    acts:[{t:'在已安装的 skill 中查找用途相近的', br:[
+            {when:'找到了', ask:'说明它们和这次需求的异同，给出“修订已有的”和“新建”两个选项并标出推荐', ans:[
+              {when:'用户选修订', out:'改为修订'},
+              {when:'用户选新建', then:'继续本步'}]},
+            {when:'没有找到', then:'继续本步'}]},
+          {t:'确定新 skill 存放在哪里', br:[
+            {when:'用户已经指明', then:'按用户说的'},
+            {when:'当前项目已有存放 skill 的约定', then:'按约定'},
+            {when:'都没有', ask:'询问用户，推荐只在本项目用的放项目目录，跨项目用的放个人目录', goText:'按回复确定'}]}],
+    out:'确认要新建，以及存放位置',
+    outcomes:[{tag:'定位已确认', kind:'next', to:'1.3'},
+              {tag:'改为修订', kind:'jump', to:'1.1', res:'改走修订路径', lane:1}]},
+  '1.3': {title:'核对需求是否完整', input:'步骤 1.1 或 1.2 的产出、对话和材料',
+    acts:[{t:'对照下面的清单逐项核对。能从对话、材料、项目文件或原 skill 中找到答案的，直接补上，不要拿去问用户', list:[
+            '解决什么问题：这个 skill 要解决的问题，以及没有它时 AI 通常会怎么做错',
+            '什么时候用：谁会在什么情况下用它，哪些相近的请求不该触发它',
+            '输入和交付：它拿到什么输入，交付什么结果，做到什么程度算完成',
+            '具体实例：至少一个真实的输入和期望的结果；修订时还要有能复现现状的请求',
+            '约束：必须遵守或不能做的事，可以使用的工具和环境',
+            '用户参与：哪些地方需要用户提供信息或做确认']},
+          {t:'根据核对结果', br:[
+            {when:'还有会影响流程走向的点不清楚', ask:'把这些点一次性问用户。每个问题说明你目前的理解，给出 2～3 个可选答案并标出推荐项；用户没给实例时，自拟一个放进问题里请用户确认', goText:'补全理解，再核对一遍'},
+            {when:'剩下的都不影响流程走向', then:'按最合理的方式自行补全，记下你的选择', out:'需求明确'}]}],
+    out:'需求摘要',
+    rules:[{t:'提问要集中，一次问清，不要零碎地反复追问'}],
+    outcomes:[{tag:'需求明确', kind:'next', to:'2'}]},
+  '2': {title:'生成或更新流程图', nest:'画的是目标 skill', input:'需求摘要、具体实例；修订时还有原 skill 和已有流程图',
+    acts:[{t:'按 `references/flowchart.md` 的规则，生成或更新目标 skill 的流程图，保存为 skill 目录下的 `flow.html`', br:[
+            {when:'是新建', then:'以实例为线索，从输入一路推到交付结果，画出主线。再挑一两个会走不同路线的情况推一遍，例如输入缺失、中途失败、用户否决，把分支补上'},
+            {when:'是修订', then:'在已有流程图上修改。没有流程图时，先把原 SKILL.md 如实还原成流程图，标出原文含糊或自相矛盾的地方，再只改受影响的部分，并在图上标出改动'}]},
+          {t:'流程图顶部写名称、触发描述、一句话用途，以及步骤 1 得到的需求摘要。每个步骤写清输入、动作、产出、可能的结果和各自的去向。画的时候，主动补全用户没有说到的部分', list:[
+            '每个输入从哪里来，拿不到时怎么办',
+            '动作失败或得到意外结果时去哪里',
+            '需要用户参与的地方，以及用户每种回复的去向',
+            '每个循环回到哪里、什么时候结束。可能反复多次的，写明最多几次，超过后怎么办',
+            '异常结束时告诉用户什么，留下什么']},
+          {t:'补全时遇到拿不准的地方，分两类处理', br:[
+            {when:'是方向性的问题，也就是有几种合理做法、选哪种结果明显不同', ask:'向用户提问：说明问题和取舍，给出 2～3 个建议做法并标出推荐项', goText:'按用户的选择画进图里'},
+            {when:'只是局部细节', then:'自行决定，并在图上标出你的选择，留给用户检查时一并核对'}]},
+          {t:'画完后先自查：每个结果都有去向，每个步骤从开始都走得到，每个循环都有退出条件，用实例沿着图走一遍能到达期望结果。发现问题先改好'},
+          {para:true, ask:'然后把流程图交给用户检查：告诉用户文件位置，概括主线、关键判断和你自行决定的细节；修订时说明改了哪里', ans:[
+            {when:'用户确认', out:'流程图已确认'},
+            {when:'问题出在需求理解上', out:'需求理解有误'},
+            {when:'问题出在流程图本身', then:'按意见修改', goText:'自查后再请用户检查'},
+            {when:'用户要暂停', out:'暂停'}]}],
+    out:'用户确认的 `flow.html`',
+    rules:[{t:'名称用“动词原形 + 对象”，只用小写字母、数字和连字符，如 `fix-bug`', why:'让人看名字就知道它做什么'},
+           {t:'触发描述用第三人称，写成“当用户……时使用”，只写什么时候用，不写怎么做。和已安装的相近 skill 有重叠时，写出能区分的场景'},
+           {t:'会改变走向的规则写成动作里的条件，其余约束写在对应步骤旁边'},
+           {t:'补全以实例和常见变化中真会遇到的情况为限，不为罕见的假想情况添加规则'},
+           {t:'参考资料类 skill 的流程可以很短，不要为了画图编造步骤'}],
+    outcomes:[{tag:'流程图已确认', kind:'next', to:'3'},
+              {tag:'需求理解有误', kind:'back', to:'1.3', res:'纠正理解，更新需求摘要，再修改流程图中受影响的部分，自查后重新请用户检查', lane:0},
+              {tag:'暂停', kind:'exit', res:'保存当前流程图，告诉用户下次从哪里继续，结束本次任务'}]},
+  '3': {title:'按流程图写成 skill', input:'用户确认的流程图；修订时还有原 SKILL.md',
+    acts:[{t:'按用户确认的流程图写出 SKILL.md。frontmatter 的 name 和 description 取自流程图顶部；正文开头用一段话说明这个 skill 做什么、交付什么；然后在“工作流”模块下按流程图逐步写出每个步骤，步骤编号与流程图一致。修订时只改受影响的部分，其余原文保持不变'},
+          {para:true, t:'写约束时，按它要防止的问题选择写法', list:[
+            '防止明知规则仍会违反，就写成明确的禁令，并说明理由',
+            '防止产出的形式走样，就正面写清产出由哪几部分组成、按什么顺序排列',
+            '防止漏掉某个要素，就在模板或清单里给它留出必填项',
+            '行为要视情况而定的，写成以可观察的条件开头的条件句，不要写“除非……”式的例外']},
+          {t:'写完后做两项检查。第一，对照流程图逐步核对，确认每个步骤、分支和去向都能在正文中找到，并且正文里没有图上没有的路径。第二，只看 SKILL.md，用实例走一遍：有子代理时，只把 SKILL.md 和实例的输入交给子代理去执行，观察它走的路线和结果；没有子代理时，自己逐步推演。另外，用一个相近但不该触发的请求检查触发描述。修订时，还要用复现请求确认原问题不再出现，并用一个与改动无关的请求确认原有行为没有被破坏。根据检查结果', br:[
+            {when:'正文与流程图不一致，或者执行时因为正文含糊而走错', then:'修改正文', goText:'再检查一遍'},
+            {when:'发现流程图本身有问题', out:'流程图有问题'},
+            {when:'触发判断有误', then:'修改触发描述，同步到流程图顶部', goText:'再检查一遍'},
+            {when:'检查都通过', out:'检查通过'}]}],
+    out:'SKILL.md、检查结果',
+    rules:[{t:'一级步骤写“步骤 1”，子步骤写“步骤 2.1”，跳转和回退写明目标步骤'},
+           {t:'每个步骤写成连贯的段落，分支用无序列表列出各种情况'},
+           {t:'用指令式语言写清依据什么、做什么、不同情况分别去哪里，需要等待或终止时也写明；循环写明回到哪里、什么时候结束'},
+           {t:'把约束写进它生效的那一步，不要集中堆在开头或末尾'},
+           {t:'不要把并列的条件写成先后步骤，也不要用重复说明和琐碎步骤盖过主线'},
+           {t:'交给子代理检查时，不要附上流程图或你的推理', why:'否则测不出正文本身是否够用'}],
+    outcomes:[{tag:'检查通过', kind:'next', to:'end', res:'向用户交付：说明文件位置、这个 skill 的主线、你在写作中自行做的选择、检查结果和仍待用户决定的事项，然后结束本次任务'},
+              {tag:'流程图有问题', kind:'back', to:'2', res:'修改流程图，经用户确认后再改正文', lane:1}]},
+};
+const TERMS = {
+  start:{title:'开始 · 收到 skill 请求', sub:'用户要新建一个 skill，或修改已有 skill 的触发、流程或规则'},
+  end:{title:'正常结束 · 交付目标 skill', sub:'SKILL.md、flow.html 和检查结果'},
+};
+const ORDER = ['start','1','2','3','end'];
+
+const SCENARIOS = {
+  create:{name:'新建', req:'把根据版本变更写发布说明的做法整理成 skill。', path:[
+    ['start','收到请求。'],
+    ['1','用户要新建一个写发布说明的 skill。这是会反复用到的做法，适合做成 skill。'],
+    ['1/新建','进入步骤 1.2。'],
+    ['1.2','没有找到用途相近的 skill。用户只在本项目使用，放进项目的 skill 目录。'],
+    ['1.3','从对话中补齐问题和场景。把两点一次性问用户：发布说明面向谁、内部改动是否收录；同时自拟 v2.3 的实例请用户确认。'],
+    ['2','以 v2.3 为线索画出主线：读取变更 → 选取用户能感知的变化 → 分组 → 撰写 → 自查；补上“提交没写说明”的分支。自查后交给用户检查。'],
+    ['2/需求理解有误','用户指出：发布说明还要给运维人员看。'],
+    ['R:2/需求理解有误','回到步骤 1.3 纠正理解。'],
+    ['1.3','需求摘要加上“面向用户和运维两类读者”。'],
+    ['2','在“分组”处加上按读者区分的分支，自查后再请用户检查。'],
+    ['2/流程图已确认','用户确认。'],
+    ['3','写出 SKILL.md。子代理只拿正文和 v2.3 的提交去执行，走的路线与流程图一致；相近的请求“写一份发布说明”不会触发它。'],
+    ['3/检查通过','两项检查都通过。'],
+    ['end','交付 write-release-notes。'],
+  ]},
+  revise:{name:'修订', req:'这份发布说明把内部日志调整也列出来了。修改刚才的 skill，只收录用户能感知的变化。', path:[
+    ['start','收到请求。'],
+    ['1','用户说“修改刚才的 skill”。'],
+    ['1/修订','进入步骤 1.1。'],
+    ['1.1','在项目目录找到 write-release-notes，读取原文和 flow.html。现状：内部日志调整也被列入；期望：只收录用户能感知的变化。复现请求：一组同时含功能变化和日志调整的变更。'],
+    ['1.3','清单各项都已明确，不需要再问用户。'],
+    ['2','在原流程图的“选取变更”处加分支：用户能感知就收录，不能就跳过，并标出改动。用户确认。'],
+    ['2/流程图已确认','进入步骤 3。'],
+    ['3','只改“选取变更”这一步。复现请求不再列出日志调整；一组与改动无关的变更，输出和原来一致。'],
+    ['3/检查通过','两项检查都通过。'],
+    ['end','交付修订后的 write-release-notes。'],
+  ]},
+  exit:{name:'提前结束', req:'把之前那个 deploy-app 的 skill 改成先跑测试再部署。', path:[
+    ['start','收到请求。'],
+    ['1','用户点名了 deploy-app。'],
+    ['1/修订','进入步骤 1.1。'],
+    ['1.1','在三个位置都找不到 deploy-app。告诉用户，并询问是否改为新建。用户回复：先不用了。'],
+    ['1.1/不再修订','得出“不再修订”。'],
+    ['R:1.1/不再修订','结束本次任务。'],
+  ]},
+};
+
+/* =================== 工具 =================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const fmt = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+const plain = s => String(s).replace(/`/g, '');
+const el = id => document.querySelector(`[data-id="${CSS.escape(id)}"]`);
+const CIRC = '①②③④⑤⑥⑦⑧⑨';
+const OFF = k => ['back','fail','jump','exit'].includes(k);
+const MAIN = k => k === 'next' || k === 'sub';
+const outcome = (sid, tag) => STEPS[sid].outcomes.find(o => o.tag === tag);
+const kidsOf = b => b.ans || b.br;
+const parentOf = sid => sid.includes('.') ? sid.split('.').slice(0, -1).join('.') : null;
+function walkBranches(sid, fn){
+  const walk = (list, path) => (list || []).forEach(b => { fn(b, [...path, b.when]); walk(kidsOf(b), [...path, b.when]); });
+  STEPS[sid].acts.forEach(a => walk(kidsOf(a), []));
+}
+const ICON = {back:'↺', jump:'↪', exit:'⇥', fail:'✖'};
+function destText(o){
+  if (o.kind === 'fail') return '✖ 终止';
+  if (o.kind === 'exit') return '⇥ 提前结束';
+  if (o.to === 'end') return '→ 正常结束';
+  if (o.kind === 'back') return '↺ 回到步骤 ' + o.to;
+  if (o.kind === 'jump') return '↪ 转到步骤 ' + o.to;
+  return '→ 步骤 ' + o.to;
+}
+function condOf(sid, tag){
+  const found = [];
+  walkBranches(sid, (b, path) => { if (b.out === tag) found.push(path.join(' → ')); });
+  return found.length ? found.join('；') : (outcome(sid, tag).when || '动作完成');
+}
+const usedTags = sid => { const u = new Set(); walkBranches(sid, b => b.out && u.add(b.out)); return u; };
+function visualOrder(){ const arr = []; const add = id => { arr.push(id); (STEPS[id] && STEPS[id].kids || []).forEach(add); }; ORDER.forEach(add); return arr; }
+
+/* =================== 校验 =================== */
+function validate(){
+  const issues = [];
+  for (const [sid, s] of Object.entries(STEPS)){
+    if (!s.outcomes || !s.outcomes.length) issues.push(`步骤 ${sid} 没有结果`);
+    walkBranches(sid, b => { if (b.out && !outcome(sid, b.out)) issues.push(`步骤 ${sid} 引用了未定义的结果「${b.out}」`); });
+    const used = usedTags(sid), unused = (s.outcomes || []).filter(o => !used.has(o.tag));
+    if (unused.length > 1 && unused.some(o => !o.when)) issues.push(`步骤 ${sid} 有多个结果没有写来源条件`);
+    for (const o of s.outcomes || []){
+      if (o.to && o.to !== 'end' && !STEPS[o.to]) issues.push(`步骤 ${sid} 的「${o.tag}」指向不存在的步骤 ${o.to}`);
+      if (!o.to && !['fail','exit'].includes(o.kind)) issues.push(`步骤 ${sid} 的「${o.tag}」没有去向`);
+      if (OFF(o.kind) && !o.res) issues.push(`步骤 ${sid} 的「${o.tag}」没写之后做什么`);
+    }
+  }
+  const seen = new Set(), stack = ['1'];
+  while (stack.length){ const id = stack.pop(); if (seen.has(id) || !STEPS[id]) continue; seen.add(id);
+    STEPS[id].outcomes.forEach(o => o.to && stack.push(o.to)); }
+  Object.keys(STEPS).filter(id => !seen.has(id)).forEach(id => issues.push(`步骤 ${id} 从开始走不到`));
+  if (![...seen].some(id => STEPS[id].outcomes.some(o => o.to === 'end'))) issues.push('没有任何结果通向正常结束');
+  const v = $('#valid');
+  v.textContent = issues.length ? `校验：${issues.length} 个问题` : '校验：✔ 每个结果都有来源和去向，每一步都走得到';
+  v.classList.toggle('bad', !!issues.length);
+  const ul = $('#issues'); ul.innerHTML = issues.map(i => `<li>${esc(i)}</li>`).join(''); ul.style.display = issues.length ? 'block' : 'none';
+}
+
+/* =================== 流程图渲染 =================== */
+function tagHTML(sid, tag){ const o = outcome(sid, tag); return `<span class="tg ${o ? o.kind : 'fail'}">${esc(tag)}</span>`; }
+function branchHTML(sid, list){
+  return `<ul class="br">${list.map(b => {
+    const parts = [];
+    if (b.then) parts.push(fmt(b.then));
+    if (b.ask) parts.push(`<span class="ask">${fmt(b.ask)}</span>`);
+    if (b.goText) parts.push(`<span class="go">↺ ${fmt(b.goText)}</span>`);
+    if (b.out) parts.push(tagHTML(sid, b.out));
+    const k = kidsOf(b);
+    return `<li><span class="when">${fmt(b.when)}</span> → ${parts.join('，')}${k ? branchHTML(sid, k) : ''}</li>`;
+  }).join('')}</ul>`;
+}
+function actHTML(sid, a, i){
+  const head = a.ask ? `<span class="ask">${fmt(a.ask)}</span>` : fmt(a.t);
+  const k = kidsOf(a);
+  const list = a.list ? `<ul class="lst">${a.list.map(x => `<li>${fmt(x)}</li>`).join('')}</ul>` : '';
+  return `<li><span class="an">${CIRC[i]}</span>${head}${a.proposed ? '<span class="prop">建议新增，待你确认</span>' : ''}${list}${k ? branchHTML(sid, k) : ''}</li>`;
+}
+function stepHTML(sid){
+  const s = STEPS[sid];
+  const io = `<div class="row"><span class="k">输入</span><span>${fmt(s.input)}</span></div>
+    <div class="row"><span class="k">动作</span><ol class="acts">${s.acts.map((a, i) => actHTML(sid, a, i)).join('')}</ol></div>
+    ${s.out ? `<div class="row"><span class="k">产出</span><span class="out">${fmt(s.out)}</span></div>` : ''}<div class="note"></div>`;
+  const rules = s.rules && s.rules.length ? `<div class="rules"><h5>约束</h5><ul>${s.rules.map(r => `<li>${fmt(r.t)}${r.why ? `<span class="why">${fmt(r.why)}</span>` : ''}</li>`).join('')}</ul></div>` : '';
+  const outs = `<div class="outs"><h5>结果</h5>${s.outcomes.map(o => `<div class="orow" data-id="${sid}/${o.tag}">
+      <span class="tg ${o.kind}">${esc(o.tag)}</span><span class="cond">${fmt(condOf(sid, o.tag))}</span>
+      <span class="dest ${o.kind}">${destText(o)}${OFF(o.kind) ? ' ⟶' : ''}</span><span class="visits"></span><div class="note"></div></div>`).join('')}</div>`;
+  const kids = s.kids ? `<div class="kids" data-kids="${sid}">${s.kids.map(stepHTML).join('')}</div>` : '';
+  return `<section class="step" data-id="${sid}" id="s-${sid}">
+    <div class="hd"><span class="sno">步骤 ${sid}</span><span class="ttl">${esc(s.title)}</span>${s.nest ? `<span class="tag-nest">嵌套：${esc(s.nest)}</span>` : ''}<span class="visits"></span></div>
+    <div class="bd${rules ? '' : ' norules'}"><div class="io">${io}</div>${rules}</div>
+    ${outs}${kids}
+  </section>`;
+}
+const offList = () => Object.entries(STEPS).flatMap(([sid, s]) => s.outcomes.filter(o => OFF(o.kind)).map(o => ({sid, o})));
+function render(){
+  $('#meta').innerHTML = `<div><span class="mk">名称</span><code>${esc(FLOW.name)}</code></div>
+    <div><span class="mk">触发描述</span>${esc(FLOW.description)}</div>
+    <div><span class="mk">用途</span><span>${FLOW.intro.map(fmt).join('<br>')}</span></div>`;
+  let h = `<div class="col-hd">步骤 · 自上而下执行</div>`;
+  for (const id of ORDER){
+    if (TERMS[id]){
+      const t = TERMS[id];
+      h += `<div class="term-wrap${id === 'start' ? ' first' : ''}"><div class="term" data-id="${id}"><span class="visits"></span><b>${t.title}</b><span class="sub">${t.sub}</span><div class="note"></div></div></div>`;
+    } else h += stepHTML(id);
+  }
+  $('#main').innerHTML = h;
+  const offs = offList(), cnt = k => offs.filter(x => x.o.kind === k).length;
+  $('#band').innerHTML = `<div class="band-hd" id="bandHd"><b>分支结果 · 离开主线的出口</b>
+      <div class="sum"><span style="color:var(--red)">✖ 终止 ${cnt('fail')}</span><span style="color:var(--blue)">⇥ 提前结束 ${cnt('exit')}</span><span style="color:var(--amber)">↺ 回退 ${cnt('back')}</span><span style="color:var(--violet)">↪ 转到 ${cnt('jump')}</span></div></div>` +
+    offs.map(({sid, o}) => `<div class="result ${o.kind}" data-id="R:${sid}/${o.tag}"><span class="visits"></span>
+      <span class="from">来自步骤 ${sid}</span><span class="tg ${o.kind}">${esc(o.tag)}</span>
+      <div class="cd">${fmt(condOf(sid, o.tag))}</div>
+      <div class="rk">${ICON[o.kind]} ${fmt(o.res)}</div>
+      ${o.to ? `<span class="goto ${o.kind}" data-goto="${o.to}">→ 跳到步骤 ${o.to}</span>` : ''}<div class="note"></div></div>`).join('');
+}
+
+/* =================== 文字版：把图里的句子串成段落 =================== */
+function routeText(o){
+  if (o.kind === 'fail' || o.kind === 'exit') return o.res;
+  if (o.to === 'end') return o.res || '结束并交付 ' + TERMS.end.sub;
+  if (o.kind === 'back') return `回到步骤 ${o.to} ${o.res}`;
+  return `进入步骤 ${o.to}`;
+}
+function branchLines(sid, list, ind){
+  return list.map(b => {
+    const p = [], k = kidsOf(b);
+    if (b.then) p.push(b.then);
+    if (b.ask) p.push(b.ans ? `${b.ask}，等待回复` : `${b.ask}，等待回复后${b.goText || '继续'}`);
+    else if (b.goText) p.push(b.goText);
+    if (b.out) p.push(routeText(outcome(sid, b.out)));
+    const line = `${ind}- 如果${b.when}，${p.join('，')}${k ? '：' : '。'}`;
+    return k ? line + '\n' + branchLines(sid, k, ind + '  ') : line;
+  }).join('\n');
+}
+function stepText(sid, level){
+  const s = STEPS[sid];
+  const paras = []; let buf = '';
+  s.acts.forEach(a => {
+    const sentence = a.ask ? `${a.ask}，等待回复` : a.t, k = kidsOf(a);
+    if (a.para && buf){ paras.push(buf); buf = ''; }
+    if (a.list){ paras.push(buf + sentence + '：\n' + a.list.map(x => `- ${x}。`).join('\n')); buf = ''; }
+    else if (k){ paras.push(buf + sentence + '：\n' + branchLines(sid, k, '')); buf = ''; }
+    else buf += sentence + '。';
+  });
+  const used = usedTags(sid), rest = s.outcomes.filter(o => !used.has(o.tag) && !OFF(o.kind) || !used.has(o.tag) && o.when);
+  if (rest.length === 1 && !rest[0].when){
+    const tail = `完成后${routeText(rest[0])}。`;
+    if (buf) buf += tail; else paras.push(tail);
+  }
+  if (buf) paras.push(buf);
+  rest.filter(o => o.when).forEach(o => paras.push(`如果${o.when}，${routeText(o)}。`));
+  if (s.rules && s.rules.length) paras.push('要求：\n' + s.rules.map(r => `- ${r.t}${r.why ? '，' + r.why : ''}。`).join('\n'));
+  let out = `${'#'.repeat(level)} 步骤 ${sid}：${s.title}\n\n${paras.join('\n\n')}`;
+  if (s.kids) out += '\n\n' + s.kids.map(k => stepText(k, level + 1)).join('\n\n');
+  return out;
+}
+function skillText(){
+  return [`---\nname: ${FLOW.name}\ndescription: ${FLOW.description}\n---`, `# ${FLOW.name}`, ...FLOW.intro, '## 工作流',
+    ...ORDER.filter(id => STEPS[id]).map(id => stepText(id, 3))].join('\n\n');
+}
+function renderText(){ $('#wf').textContent = skillText(); }
+
+/* =================== 结果列对齐与连线 =================== */
+const narrow = () => matchMedia('(max-width:1180px)').matches;
+function layoutResults(){
+  const band = $('#band');
+  document.querySelectorAll('.result').forEach(e => e.style.top = '');
+  if (narrow()){ band.style.minHeight = ''; return; }
+  const top0 = band.getBoundingClientRect().top;
+  let prev = $('#bandHd').getBoundingClientRect().bottom - top0;
+  const items = offList().map(({sid, o}) => {
+    const s = el(`${sid}/${o.tag}`).getBoundingClientRect();
+    return {id:`R:${sid}/${o.tag}`, y:s.top + s.height / 2 - top0};
+  }).sort((a, b) => a.y - b.y);
+  for (const it of items){
+    const e = el(it.id), h = e.offsetHeight, t = Math.max(it.y - h / 2, prev + 12);
+    e.style.top = t + 'px'; prev = t + h;
+  }
+  band.style.minHeight = (prev + 16) + 'px';
+}
+const layout = $('#layout');
+function R(e){
+  const c = layout.getBoundingClientRect(), r = e.getBoundingClientRect();
+  const l = r.left - c.left, t = r.top - c.top;
+  return {l, t, r:l + r.width, b:t + r.height, cx:l + r.width / 2, cy:t + r.height / 2};
+}
+const pathD = p => p.map((q, i) => (i ? 'L' : 'M') + q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join(' ');
+function draw(){
+  const svg = $('#wires'), lab = $('#labels');
+  if (narrow() || document.body.classList.contains('text')){ svg.innerHTML = ''; lab.innerHTML = ''; return; }
+  svg.setAttribute('width', layout.scrollWidth); svg.setAttribute('height', layout.scrollHeight);
+  let s = `<defs>${['main','back','fail','jump','exit'].map(k => `<marker id="a-${k}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="mk-${k}" d="M0 0L10 5L0 10z"/></marker>`).join('')}</defs>`;
+  let L = '';
+  const add = (p, cls, mk) => { s += `<path class="w ${cls}" d="${pathD(p)}"${mk ? ` marker-end="url(#a-${mk})"` : ''}/>`; };
+  const vis = visualOrder(), adjacent = (a, b) => vis.indexOf(b) === vis.indexOf(a) + 1;
+  { const a = R(el('start')), b = R(el('1')); add([[b.cx, a.b], [b.cx, b.t]], 'main', 'main'); }
+  for (const [sid, st] of Object.entries(STEPS)){
+    const box = R(el(sid));
+    for (const o of st.outcomes){
+      if (o.kind === 'sub'){                 // 进入子步骤：紧邻的直下，其余沿左侧通道
+        const A = R(el(sid).querySelector(':scope > .outs')), B = R(el(o.to));
+        if (adjacent(sid, o.to)){
+          const ym = A.b + 14;
+          add([[A.cx, A.b], [A.cx, ym], [B.cx, ym], [B.cx, B.t]], 'main', 'main');
+          L += `<div class="elabel" style="left:${B.cx}px;top:${(ym + B.t) / 2 + 3}px">${tagHTML(sid, o.tag)}</div>`;
+        } else {
+          const rx = R(el(sid).querySelector(':scope > .kids')).l + 12, y1 = A.b + 14, y2 = B.t - 16;
+          add([[A.cx, A.b], [A.cx, y1], [rx, y1], [rx, y2], [B.l + 28, y2], [B.l + 28, B.t]], 'main', 'main');
+          L += `<div class="elabel left" style="left:${B.l + 40}px;top:${y2}px">${tagHTML(sid, o.tag)}</div>`;
+        }
+      } else if (o.kind === 'next'){
+        const B = R(el(o.to));
+        if (adjacent(sid, o.to) || !parentOf(sid) || parentOf(sid) !== parentOf(o.to) && adjacentAfterParent(sid, o.to, vis)){
+          const ym = box.b + Math.min(16, (B.t - box.b) / 2);
+          add([[box.cx, box.b], [box.cx, ym], [B.cx, ym], [B.cx, B.t]], 'main', 'main');
+        } else {                             // 绕过中间的兄弟步骤
+          const rx = R(el(parentOf(sid)).querySelector(':scope > .kids')).l + 26, y1 = box.b + 14, y2 = B.t - 16;
+          add([[box.l + 28, box.b], [box.l + 28, y1], [rx, y1], [rx, y2], [B.l + 28, y2], [B.l + 28, B.t]], 'main', 'main');
+        }
+      } else {                               // 离开主线：结果行 → 结果列 → 目标步骤
+        const row = R(el(`${sid}/${o.tag}`)), rb = R(el(`R:${sid}/${o.tag}`)), mx = rb.l - 20;
+        add([[row.r, row.cy], [mx, row.cy], [mx, rb.cy], [rb.l, rb.cy]], 'c-' + o.kind, o.kind);
+        if (o.to){
+          const t = R(el(o.to)), lx = R($('#band')).r + 16 + (o.lane || 0) * 16, ey = t.t - 12, ex = t.r - 48;
+          add([[rb.r, rb.cy], [lx, rb.cy], [lx, ey], [ex, ey], [ex, t.t]], o.kind, o.kind);
+        }
+      }
+    }
+  }
+  svg.innerHTML = s; lab.innerHTML = L;
+}
+/* 子步骤最后一个流出父步骤，且目标紧跟父步骤之后 */
+function adjacentAfterParent(sid, to, vis){
+  const p = parentOf(sid), kids = STEPS[p].kids;
+  return kids[kids.length - 1] === sid && ORDER[ORDER.indexOf(p) + 1] === to;
+}
+function relayout(){ layoutResults(); draw(); }
+
+/* =================== 示例走查 =================== */
+let cur = null, idx = 0;
+function titleOf(id){
+  if (STEPS[id]) return `步骤 ${id}`;
+  if (TERMS[id]) return TERMS[id].title.split(' · ')[0];
+  const m = id.match(/^(R:)?([\d.]+)\/(.+)$/);
+  return m ? (m[1] ? `右侧 · ${m[3]}` : `◆ ${m[3]}`) : id;
+}
+function setScenario(key){
+  cur = key; idx = 0;
+  document.querySelectorAll('#scenBtns button').forEach(b => b.classList.toggle('on', b.dataset.k === (key || '')));
+  $('#bar').classList.toggle('active', !!key);
+  layout.classList.toggle('scen', !!key);
+  applyStep(false);
+}
+function applyStep(scroll = true){
+  document.querySelectorAll('[data-id]').forEach(e => e.classList.remove('visited', 'cur-el'));
+  document.querySelectorAll('.note').forEach(n => n.textContent = '');
+  document.querySelectorAll('.visits').forEach(v => v.innerHTML = '');
+  const prev = $('#prev'), next = $('#next');
+  if (!cur){ prev.disabled = next.disabled = true; relayout(); return; }
+  const path = SCENARIOS[cur].path;
+  $('#reqText').textContent = SCENARIOS[cur].req;
+  const own = e => e.querySelector(':scope > .hd > .visits, :scope > .visits');
+  path.forEach(([id], j) => {
+    const e = el(id); e.classList.add('visited');
+    let p = e.parentElement.closest('.step'); while (p){ p.classList.add('visited'); p = p.parentElement.closest('.step'); }
+    own(e).insertAdjacentHTML('beforeend', `<span>${j + 1}</span>`);
+  });
+  const [cid, note] = path[idx], ce = el(cid);
+  ce.classList.add('cur-el');
+  (ce.querySelector(':scope > .note') || ce.querySelector(':scope > .bd > .io > .note')).textContent = note;
+  $('#chips').innerHTML = path.map(([id], j) =>
+    `${j ? '<span class="arrow">→</span>' : ''}<span class="chip${j < idx ? ' done' : ''}${j === idx ? ' cur' : ''}" data-j="${j}"><i>${j + 1}</i>${esc(titleOf(id))}</span>`).join('');
+  $('#nowText').innerHTML = `<b>第 ${idx + 1} / ${path.length} 步 · ${esc(titleOf(cid))}</b>　${esc(note)}`;
+  prev.disabled = idx === 0; next.disabled = idx === path.length - 1;
+  relayout();
+  if (scroll) ce.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+/* =================== 启动 =================== */
+render(); renderText(); validate();
+$('#scenBtns').innerHTML = `<button data-k="" class="on">不选</button> ` +
+  Object.entries(SCENARIOS).map(([k, s]) => `<button data-k="${k}">${s.name}</button>`).join(' ');
+$('#scenBtns').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setScenario(b.dataset.k || null); });
+$('#prev').onclick = () => { if (idx > 0){ idx--; applyStep(); } };
+$('#next').onclick = () => { if (cur && idx < SCENARIOS[cur].path.length - 1){ idx++; applyStep(); } };
+$('#chips').addEventListener('click', e => { const c = e.target.closest('.chip'); if (c){ idx = +c.dataset.j; applyStep(); } });
+document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.seg button').forEach(x => x.classList.toggle('on', x === b));
+  document.body.classList.toggle('text', b.dataset.v === 'text'); relayout();
+});
+$('#copy').onclick = () => { navigator.clipboard && navigator.clipboard.writeText($('#wf').textContent).then(() => { $('#copy').textContent = '已复制'; setTimeout(() => $('#copy').textContent = '复制', 1500); }); };
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-goto]'); if (!g) return;
+  const t = el(g.dataset.goto); t.scrollIntoView({behavior:'smooth', block:'center'});
+  t.classList.remove('flash'); void t.offsetWidth; t.classList.add('flash');
+});
+document.addEventListener('keydown', e => { if (e.key === 'ArrowRight') $('#next').click(); if (e.key === 'ArrowLeft') $('#prev').click(); });
+(() => { // #create:9 打开某示例第几步；#text 打开文本视图
+  if (location.hash === '#text'){ document.querySelector('.seg button[data-v="text"]').click(); setScenario(null); return; }
+  const m = location.hash.match(/^#(\w+)(?::(\d+))?$/);
+  if (m && SCENARIOS[m[1]]){ setScenario(m[1]); idx = Math.min((+m[2] || 1) - 1, SCENARIOS[m[1]].path.length - 1); applyStep(false); }
+  else setScenario(null);
+})();
+new ResizeObserver(relayout).observe($('#main'));
+window.addEventListener('resize', relayout);
+if (document.fonts) document.fonts.ready.then(relayout);
+</script>
+</body>
+</html>

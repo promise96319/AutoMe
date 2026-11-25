@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skill 流程图</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.400.0/dist/umd/lucide.min.js"></script>
+<style>
+:root{
+  --bg:240 20% 98.5%; --fg:240 10% 4%; --card:0 0% 100%; --muted:240 5% 96%; --muted-fg:240 4% 46%;
+  --border:240 6% 90%; --primary:245 75% 58%; --primary-2:280 75% 60%; --primary-soft:245 90% 96%;
+  --ok:152 65% 34%; --ok-bg:150 70% 95%; --warn:30 92% 42%; --warn-bg:40 100% 95%;
+  --info:200 90% 40%; --info-bg:200 95% 95%; --bad:0 72% 48%; --bad-bg:0 86% 96%;
+  --dec:262 70% 55%; --dec-bg:262 90% 96%;
+  --shadow:0 4px 16px -4px rgb(30 27 75 / .10),0 1px 3px rgb(16 16 40 / .06);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:240 12% 5%; --fg:0 0% 98%; --card:240 10% 8%; --muted:240 5% 14%; --muted-fg:240 5% 65%;
+  --border:240 5% 16%; --primary:245 90% 68%; --primary-2:280 85% 68%; --primary-soft:245 40% 16%;
+  --ok:150 65% 55%; --ok-bg:152 45% 12%; --warn:38 92% 60%; --warn-bg:33 50% 12%;
+  --info:200 90% 62%; --info-bg:200 50% 13%; --bad:0 91% 71%; --bad-bg:0 50% 14%;
+  --dec:262 90% 75%; --dec-bg:262 40% 16%; --shadow:0 8px 24px -12px rgb(0 0 0 / .5);}}
+:root[data-theme="dark"]{
+  --bg:240 12% 5%; --fg:0 0% 98%; --card:240 10% 8%; --muted:240 5% 14%; --muted-fg:240 5% 65%;
+  --border:240 5% 16%; --primary:245 90% 68%; --primary-2:280 85% 68%; --primary-soft:245 40% 16%;
+  --ok:150 65% 55%; --ok-bg:152 45% 12%; --warn:38 92% 60%; --warn-bg:33 50% 12%;
+  --info:200 90% 62%; --info-bg:200 50% 13%; --bad:0 91% 71%; --bad-bg:0 50% 14%;
+  --dec:262 90% 75%; --dec-bg:262 40% 16%; --shadow:0 8px 24px -12px rgb(0 0 0 / .5);}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:hsl(var(--bg));color:hsl(var(--fg));font:14px/1.6 Inter,-apple-system,"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+button{font:inherit;color:inherit}
+code{font:12.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:hsl(var(--muted));padding:1px 5px;border-radius:4px}
+.ic{width:16px;height:16px;flex:none} .ic.sm{width:14px;height:14px} .ic.xs{width:12px;height:12px}
+.muted{color:hsl(var(--muted-fg))}
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:1px solid hsl(var(--border));border-radius:8px;background:hsl(var(--card));font-size:13px;font-weight:500;cursor:pointer}
+.btn:hover{background:hsl(var(--muted))} .btn.icon{width:32px;padding:0;justify-content:center}
+.badge{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 9px;border-radius:7px;font-size:12px;font-weight:600;white-space:nowrap}
+.b-next{background:hsl(var(--primary-soft));color:hsl(var(--primary))} .b-back{background:hsl(var(--warn-bg));color:hsl(var(--warn))}
+.b-end{background:hsl(var(--muted));color:hsl(var(--fg))} .b-retry{box-shadow:inset 0 0 0 1px hsl(var(--border));color:hsl(var(--muted-fg))}
+.b-cont{color:hsl(var(--muted-fg));font-weight:500}
+.b-dec{background:hsl(var(--dec-bg));color:hsl(var(--dec))} .b-ask{background:hsl(var(--warn-bg));color:hsl(var(--warn))}
+.b-ref{background:hsl(var(--info-bg));color:hsl(var(--info));cursor:pointer}
+.link{cursor:pointer} .link:hover{filter:brightness(.96)}
+.tabs{display:inline-flex;padding:3px;border-radius:8px;background:hsl(var(--muted))}
+.tab{height:30px;padding:0 12px;border:0;border-radius:6px;background:none;font-size:13px;font-weight:500;color:hsl(var(--muted-fg));cursor:pointer}
+.tab.on{background:hsl(var(--card));color:hsl(var(--primary));box-shadow:0 1px 2px rgb(0 0 0 / .06)}
+.switch{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:500;cursor:pointer;user-select:none}
+.switch i{width:36px;height:20px;border-radius:999px;background:hsl(var(--border));position:relative}
+.switch i::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.switch.on i{background:hsl(var(--primary))} .switch.on i::after{left:18px}
+
+/* 顶栏与布局 */
+.top{height:56px;flex:none;display:flex;align-items:center;gap:12px;padding:0 16px;border-bottom:1px solid hsl(var(--border));background:hsl(var(--card))}
+.logo{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,hsl(var(--primary)),hsl(var(--primary-2)))}
+.ttl{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.ttl b{font-size:14px} .ttl span{font-size:12px;color:hsl(var(--muted-fg));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:420px}
+.grow{flex:1}
+.vstat{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:hsl(var(--ok));cursor:default}
+.vstat.bad{color:hsl(var(--bad));cursor:pointer}
+.shell{flex:1;display:grid;grid-template-columns:248px 1fr;min-height:0}
+.side{border-right:1px solid hsl(var(--border));background:hsl(var(--card));overflow:auto;padding:12px 12px 32px}
+.gh{height:30px;display:flex;align-items:center;padding:0 8px;font-size:12px;font-weight:500;color:hsl(var(--muted-fg));margin-top:8px}
+.it{display:flex;align-items:center;gap:8px;height:32px;padding:0 8px;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap}
+.it:hover{background:hsl(var(--muted))} .it .k{min-width:26px;font-size:12px;color:hsl(var(--muted-fg))}
+.it .t{overflow:hidden;text-overflow:ellipsis} .it .r{margin-left:auto;font-size:12px;color:hsl(var(--muted-fg))}
+.it.d2{padding-left:24px} .it.d3{padding-left:40px} .it .ic{color:hsl(var(--muted-fg))}
+.main{overflow:auto}
+.wrap{max-width:900px;margin:0 auto;padding:28px 32px 96px}
+.issues{display:none;margin:0 0 20px;padding:12px 16px 12px 34px;border-radius:10px;background:hsl(var(--bad-bg));color:hsl(var(--bad));font-size:13px}
+.issues.on{display:block}
+
+/* 头图 */
+.hero{position:relative;overflow:hidden;border-radius:16px;padding:26px 28px 22px;margin-bottom:28px;color:#fff;background:radial-gradient(120% 140% at 0% 0%,hsl(var(--primary)),hsl(var(--primary-2)) 55%,hsl(320 80% 60%));box-shadow:0 20px 40px -12px rgb(30 27 75 / .3)}
+.hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgb(255 255 255 / .18) 1px,transparent 1px);background-size:18px 18px;mask-image:linear-gradient(to bottom,#000,transparent 85%);pointer-events:none}
+.hero > *{position:relative;z-index:1}
+.hero h1{margin:4px 0 6px;font-size:28px;letter-spacing:-.02em}
+.hero p{margin:0;max-width:680px;opacity:.92}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;opacity:.85}
+.hstats{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.hs{display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px;border-radius:999px;background:rgb(255 255 255 / .16);font-size:13px}
+.hs b{font-size:15px}
+.ov{display:flex;align-items:flex-start;gap:6px;margin-top:18px;padding:14px 16px;border-radius:12px;background:rgb(255 255 255 / .12);overflow:auto}
+.ovn{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:96px;text-align:center;cursor:pointer}
+.ovn .d{width:32px;height:32px;border-radius:50%;background:#fff;color:hsl(var(--primary));font-weight:700;font-size:13px;display:grid;place-items:center}
+.ovn span{font-size:11.5px;line-height:1.3;max-width:110px;opacity:.92}
+.ovn .kids{font-size:11px;opacity:.75}
+.ovl{flex:1;min-width:16px;height:2px;background:rgb(255 255 255 / .5);margin-top:16px}
+
+/* 主线与步骤 */
+.flow{position:relative}
+.flow::before{content:"";position:absolute;left:23px;top:24px;bottom:30px;width:3px;border-radius:3px;background:linear-gradient(to bottom,hsl(var(--primary)),hsl(var(--primary-2)))}
+.lane{display:grid;grid-template-columns:48px minmax(0,1fr);column-gap:20px;margin-bottom:20px}
+.node{position:relative;z-index:1;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-weight:700;color:#fff;background:linear-gradient(135deg,hsl(var(--primary)),hsl(var(--primary-2)));box-shadow:0 0 0 5px hsl(var(--bg));cursor:pointer}
+.lane.d2 .node,.lane.d3 .node{width:36px;height:36px;margin:6px;border-radius:10px;font-size:12.5px;background:hsl(var(--card));color:hsl(var(--primary));box-shadow:0 0 0 2px hsl(var(--primary) / .5),0 0 0 6px hsl(var(--bg))}
+.lane.d2 > .box,.lane.d3 > .box{margin-left:24px} .lane.d3 > .box{margin-left:48px}
+.parent{padding:10px 0}
+.parent .kick{font-size:12px;font-weight:600;color:hsl(var(--primary))}
+.parent h2{margin:2px 0 0;font-size:20px;letter-spacing:-.01em}
+.card{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:14px;box-shadow:var(--shadow);scroll-margin:20px}
+.ch{display:flex;align-items:flex-start;gap:12px;padding:16px 22px 4px}
+.ch .k{font-size:12px;font-weight:600;color:hsl(var(--primary))}
+.ch h3{margin:2px 0 0;font-size:17px}
+.ch .grow{min-width:0}
+.tl{padding:12px 22px 10px}
+.ti{display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:14px;position:relative;padding-bottom:14px}
+.ti::before{content:"";position:absolute;left:13.5px;top:30px;bottom:2px;width:1px;background:hsl(var(--border))}
+.ti:last-child::before{display:none}
+.td{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:hsl(var(--muted));color:hsl(var(--muted-fg))}
+.ti.decide .td{background:hsl(var(--dec-bg));color:hsl(var(--dec))}
+.ti.ask .td{background:hsl(var(--warn-bg));color:hsl(var(--warn))}
+.th{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;min-height:28px}
+.tn{font-weight:600;cursor:pointer} .tn:hover{color:hsl(var(--primary))}
+.tf{display:none;margin-top:2px;font-size:13px;color:hsl(var(--muted-fg));line-height:1.65}
+body.full .tf,.ti.open .tf{display:block}
+.chk{list-style:none;margin:8px 0 0;padding:10px 14px;border-radius:10px;background:hsl(var(--muted));font-size:13px}
+.chk li{display:flex;gap:8px;padding:2px 0;color:hsl(var(--muted-fg))} .chk li .ic{margin-top:3px}
+.paths{margin-top:8px;border:1px solid hsl(var(--border));border-radius:12px;overflow:hidden;font-size:13px}
+.pr{display:grid;grid-template-columns:minmax(140px,200px) minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 14px;border-top:1px solid hsl(var(--border))}
+.pr:first-child{border-top:0}
+.pr .c{display:flex;align-items:flex-start;gap:6px;font-weight:600}
+.pr .c .bul{width:7px;height:7px;border-radius:50%;background:hsl(var(--dec));margin-top:7px;flex:none}
+.pr.reply{background:hsl(var(--muted) / .45)} .pr.reply .c{font-weight:500}
+.pr .h{color:hsl(var(--muted-fg))}
+.pr .f{display:none;font-size:12px;font-weight:400;color:hsl(var(--muted-fg));margin-top:2px}
+body.full .pr .f{display:block}
+.pr .d{display:flex;justify-content:flex-end}
+.pr .h .b-ref,.th .b-ref{margin-left:6px}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 22px;border-top:1px solid hsl(var(--border));background:linear-gradient(90deg,hsl(var(--primary-soft)),transparent 70%);font-weight:500;border-radius:0 0 14px 14px}
+.rules{margin:0 22px 14px;padding:10px 14px;border-radius:10px;background:hsl(var(--warn-bg));font-size:13px}
+.rules b{color:hsl(var(--warn));font-size:12.5px} .rules ul{margin:4px 0 0;padding-left:18px}
+.flash{animation:fl 1.2s} @keyframes fl{0%,50%{box-shadow:0 0 0 3px hsl(var(--primary))}100%{box-shadow:var(--shadow)}}
+pre.text{margin:0;padding:20px 24px;white-space:pre-wrap;font:13px/1.8 ui-monospace,Menlo,"PingFang SC",monospace}
+.view{display:none} .view.on{display:block}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:400px;max-width:100%;background:hsl(var(--card));border-left:1px solid hsl(var(--border));transform:translateX(100%);transition:transform .2s;z-index:50;padding:22px;overflow:auto}
+.sheet.on{transform:none;box-shadow:-10px 0 30px rgb(0 0 0 / .15)}
+.sheet h4{margin:0 0 4px;font-size:17px} .sheet h5{margin:18px 0 6px;font-size:12.5px;color:hsl(var(--muted-fg))}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="logo"><i data-lucide="workflow" class="ic"></i></div>
+  <div class="ttl"><b id="nm"></b><span id="ds"></span></div>
+  <div class="tabs"><button class="tab on" data-v="flow">流程</button><button class="tab" data-v="text">文字版</button></div>
+  <div class="grow"></div>
+  <span class="vstat" id="vs"></span>
+  <label class="switch" id="sw"><i></i>完整文字</label>
+  <button class="btn icon" id="theme" title="切换明暗"></button>
+</header>
+<div class="shell">
+  <aside class="side" id="side"></aside>
+  <main class="main"><div class="wrap">
+    <ul class="issues" id="issues"></ul>
+    <section class="view on" id="v-flow"><section class="hero" id="hero"></section><div class="flow" id="flow"></div></section>
+    <section class="view" id="v-text"><div class="card"><div style="display:flex;justify-content:flex-end;padding:12px 16px 0"><button class="btn" id="copy">复制</button></div><pre class="text" id="txt"></pre></div></section>
+  </div></main>
+</div>
+<aside class="sheet" id="sheet"></aside>
+
+<script>
+/* FLOW_DATA_START —— 生成 flow.html 时，只替换这两行标记之间的内容 */
+const FLOW = {
+  name: 'example-skill',
+  description: '当用户需要……时使用。',
+  summary: '一段话说明这个 skill 做什么、交付什么。',
+  globalRules: [],
+  resources: [],
+  steps: [
+    { id: '1', title: '第一步', body: [
+      { type: 'do', label: '读取材料 → 弄清需求', text: '读取用户提供的材料，弄清用户要什么' },
+    ], next: { type: 'goto', to: '2' } },
+    { id: '2', title: '第二步', body: [
+      { type: 'ask', label: '请用户确认 → 得到结论', text: '把结果交给用户确认，并给出你的建议。等待回复', branches: [
+        { when: '用户确认', then: [{ type: 'end', text: '结束本次任务，交付结果' }] },
+        { when: '用户提出修改', then: [{ type: 'do', text: '按意见修改' }, { type: 'retry', text: '再请用户确认' }] },
+      ] },
+    ] },
+  ],
+};
+/* FLOW_DATA_END */
+</script>
+<script>
+/* ===================== 渲染引擎（不要修改） ===================== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = s => esc(s).replace(/`([^`]+)`/g, '<code>$1</code>');
+const ic = (n, c = '') => `<i data-lucide="${n}" class="ic ${c}"></i>`;
+const icons = () => window.lucide && lucide.createIcons();
+const FLOWS = ['goto', 'retry', 'end'];
+
+/* ---- 索引 ---- */
+const ALL = {}, ORDER = [];
+(function index(list, depth, parent){ list.forEach(s => { s.depth = depth; s.parent = parent; ALL[s.id] = s; ORDER.push(s.id); if (s.children) index(s.children, depth + 1, s.id); }); })(FLOW.steps, 1, null);
+const LEAVES = ORDER.filter(id => !ALL[id].children);
+const pos = id => ORDER.indexOf(id);
+const isBack = (from, to) => pos(to) <= pos(from);
+const RES = FLOW.resources || [];
+function walk(nodes, fn, sid){ (nodes || []).forEach(n => { fn(n, sid); (n.branches || []).forEach(b => walk(b.then, fn, sid)); }); }
+function eachNode(fn){ LEAVES.forEach(id => { walk(ALL[id].body, fn, id); if (ALL[id].next) fn(ALL[id].next, id); }); }
+const pathsIn = t => (String(t || '').match(/`([^`]+)`/g) || []).map(x => x.slice(1, -1)).filter(x => /^(references|scripts|assets)\//.test(x));
+
+/* ---- 校验 ---- */
+function terminates(b){ return (b.then || []).some(x => FLOWS.includes(x.type) || (x.type === 'ask' && x.branches && x.branches.every(terminates))); }
+function validate(){
+  const iss = [];
+  ORDER.forEach(id => {
+    const s = ALL[id];
+    if (s.depth > 3) iss.push(`步骤 ${id} 超过三层`);
+    if (s.children && s.body) iss.push(`步骤 ${id} 同时包含指令和子步骤`);
+    if (!s.children && !(s.body && s.body.length)) iss.push(`步骤 ${id} 没有内容`);
+    if (s.children && s.next) iss.push(`父步骤 ${id} 不应写去向，去向写在子步骤里`);
+    if (!s.body) return;
+    s.body.forEach((n, i) => {
+      if (!n.label) iss.push(`步骤 ${id} 的第 ${i + 1} 条指令缺少简短名称`);
+      if (n.type === 'decide' && !(n.branches || []).length) iss.push(`步骤 ${id} 的判断“${n.label || ''}”没有分支`);
+      if (n.type === 'ask' && !(n.branches || []).length) iss.push(`步骤 ${id} 的提问“${n.label || ''}”没有回复分支`);
+      if (n.type === 'check' && !(n.items || []).length) iss.push(`步骤 ${id} 的清单没有内容`);
+    });
+    if (!s.next){
+      const last = s.body[s.body.length - 1];
+      if (!last || !last.branches || !last.branches.every(terminates)) iss.push(`步骤 ${id} 没有写完成后的去向`);
+    }
+  });
+  eachNode((n, sid) => {
+    if (n.type === 'goto'){
+      if (!ALL[n.to]) iss.push(`步骤 ${sid} 跳转到不存在的步骤 ${n.to}`);
+      else if (ALL[n.to].children) iss.push(`步骤 ${sid} 跳转到父步骤 ${n.to}，应指向具体的子步骤`);
+    }
+    [n.text, n.when].forEach(t => pathsIn(t).forEach(p => { if (!RES.some(r => r.path === p)) iss.push(`步骤 ${sid} 引用了未登记的资源 ${p}`); }));
+  });
+  const seen = new Set(), st = [LEAVES[0]];
+  while (st.length){ const id = st.pop(); if (!id || seen.has(id) || !ALL[id]) continue; seen.add(id);
+    walk(ALL[id].body, n => { if (n.type === 'goto') st.push(n.to); });
+    const nx = ALL[id].next; if (nx && nx.type === 'goto') st.push(nx.to); }
+  LEAVES.filter(id => !seen.has(id)).forEach(id => iss.push(`步骤 ${id} 从开始走不到`));
+  RES.forEach(r => { let used = false; eachNode(n => { if (pathsIn(n.text).includes(r.path)) used = true; }); if (!used) iss.push(`资源 ${r.path} 没有被任何指令引用`); });
+  const v = $('#vs');
+  v.innerHTML = iss.length ? `${ic('circle-alert', 'sm')}${iss.length} 个问题` : `${ic('circle-check', 'sm')}结构校验通过`;
+  v.classList.toggle('bad', !!iss.length);
+  $('#issues').innerHTML = iss.map(x => `<li>${esc(x)}</li>`).join('');
+  v.onclick = () => $('#issues').classList.toggle('on');
+  if (iss.length) $('#issues').classList.add('on');
+  return iss;
+}
+
+/* ---- 去向 ---- */
+function dest(sid, f){
+  if (!f) return '';
+  if (f.type === 'goto'){
+    const back = isBack(sid, f.to);
+    return `<span class="badge ${back ? 'b-back' : 'b-next'} link" data-go="${esc(f.to)}" title="${esc(f.text || '')}">${ic(back ? 'rotate-ccw' : 'arrow-right', 'xs')}${back ? '回到' : '步骤'} ${esc(f.to)}</span>`;
+  }
+  if (f.type === 'retry') return `<span class="badge b-retry">${ic('refresh-cw', 'xs')}${esc(f.text)}</span>`;
+  if (f.type === 'end') return `<span class="badge b-end" title="${esc(f.text)}">${ic('flag', 'xs')}结束</span>`;
+  return '';
+}
+const refsOf = t => pathsIn(t).map(p => `<span class="badge b-ref" data-res="${esc(p)}">${ic(p.startsWith('scripts') ? 'file-code' : p.startsWith('assets') ? 'package' : 'file-text', 'xs')}${esc(p.split('/').pop())}</span>`).join('');
+
+/* ---- 分支行 ---- */
+function rows(sid, branches, depth, reply){
+  return branches.map(b => {
+    const then = b.then || [], f = then.find(x => FLOWS.includes(x.type)), ask = then.find(x => x.type === 'ask' && x.branches);
+    const handle = then.filter(x => x.type === 'do' || (x.type === 'ask' && !x.branches) || (x.type === 'end')).map(x =>
+      x.type === 'ask' ? `<span style="color:hsl(var(--warn));font-weight:500">${ic('message-circle', 'xs')} ${fmt(x.label || x.text)}</span>` : fmt(x.text)).join('；');
+    const askH = ask ? `<span style="color:hsl(var(--warn));font-weight:500">${ic('message-circle', 'xs')} ${fmt(ask.label || ask.text)}</span>${ask.label ? `<div class="f">${fmt(ask.text)}</div>` : ''}` : '';
+    const d = f ? dest(sid, f) : ask ? '' : `<span class="badge b-cont">${ic('arrow-down', 'xs')}继续</span>`;
+    const head = `<div class="pr${reply ? ' reply' : ''}"><div class="c" style="padding-left:${depth * 18}px">${reply ? ic('user', 'sm') : depth ? ic('corner-down-right', 'sm') : '<span class="bul"></span>'}<div>${reply ? '<span class="muted">用户：</span>' : ''}${fmt(b.label || b.when)}${b.label ? `<div class="f">${fmt(b.when)}</div>` : ''}</div></div><div class="h">${[handle, askH].filter(Boolean).join('；')}${refsOf(then.map(x => x.text).join(' '))}</div><div class="d">${d}</div></div>`;
+    return head + (ask ? rows(sid, ask.branches, depth + 1, true) : '');
+  }).join('');
+}
+
+/* ---- 步骤 ---- */
+const TYPE = {do:['arrow-right', ''], decide:['git-branch', '判断'], ask:['message-circle', '等待回复'], check:['list-checks', '清单']};
+function leafHTML(s){
+  const body = s.body.map(n => {
+    const [icon, kind] = TYPE[n.type] || TYPE.do;
+    return `<div class="ti ${n.type}"><div class="td">${ic(icon, 'sm')}</div><div>
+      <div class="th"><span class="tn">${fmt(n.label || n.text)}</span>${kind ? `<span class="badge ${n.type === 'decide' ? 'b-dec' : n.type === 'ask' ? 'b-ask' : 'b-end'}">${kind}</span>` : ''}${refsOf(n.text)}</div>
+      ${n.label ? `<div class="tf">${fmt(n.text)}</div>` : ''}
+      ${n.type === 'check' ? `<ul class="chk">${n.items.map(x => `<li>${ic('square', 'sm')}<span>${fmt(x)}</span></li>`).join('')}</ul>` : ''}
+      ${n.branches ? `<div class="paths">${rows(s.id, n.branches, 0, n.type === 'ask')}</div>` : ''}</div></div>`;
+  }).join('');
+  const nx = s.next ? `<div class="foot"><span>${s.next.type === 'end' ? fmt(s.next.text) : '完成后'}</span>${dest(s.id, s.next)}</div>` : '';
+  const rules = (s.rules || []).length ? `<div class="rules"><b>约束</b><ul>${s.rules.map(r => `<li>${fmt(r)}</li>`).join('')}</ul></div>` : '';
+  return `<div class="card box" id="s-${esc(s.id)}"><div class="ch"><div class="grow"><span class="k">步骤 ${esc(s.id)}</span><h3>${esc(s.title)}</h3></div></div><div class="tl">${body}</div>${rules}${nx}</div>`;
+}
+function stepHTML(s){
+  const lane = inner => `<div class="lane d${s.depth}"><div><div class="node" data-go="${esc(s.id)}">${esc(s.id)}</div></div>${inner}</div>`;
+  if (s.children) return lane(`<div class="parent box" id="s-${esc(s.id)}"><span class="kick">步骤 ${esc(s.id)}</span><h2>${esc(s.title)}</h2></div>`) + s.children.map(stepHTML).join('');
+  return lane(leafHTML(s));
+}
+
+/* ---- 侧栏与头图 ---- */
+function render(){
+  $('#nm').textContent = FLOW.name; $('#ds').textContent = FLOW.description; document.title = FLOW.name + ' · 流程图';
+  let asks = 0, ends = [], backs = [];
+  eachNode((n, sid) => { if (n.type === 'ask') asks++; if (n.type === 'end') ends.push([sid, n]); if (n.type === 'goto' && ALL[n.to] && isBack(sid, n.to)) backs.push([sid, n]); });
+  $('#hero').innerHTML = `<div class="eyebrow">SKILL 流程图</div><h1>${esc(FLOW.name)}</h1><p>${esc(FLOW.description)}</p>
+    <div class="hstats"><span class="hs">${ic('list-checks', 'sm')}<b>${LEAVES.length}</b>个步骤</span><span class="hs">${ic('message-circle', 'sm')}<b>${asks}</b>处等待用户</span><span class="hs">${ic('flag', 'sm')}<b>${ends.length}</b>个结束点</span><span class="hs">${ic('rotate-ccw', 'sm')}<b>${backs.length}</b>处回退</span><span class="hs">${ic('folder', 'sm')}<b>${RES.length}</b>个资源</span></div>
+    <div class="ov">${FLOW.steps.map(s => `<div class="ovn" data-go="${esc(s.id)}"><div class="d">${esc(s.id)}</div><span>${esc(s.title)}</span>${s.children ? `<span class="kids">${s.children.map(c => c.id).join(' · ')}</span>` : ''}</div>`).join('<div class="ovl"></div>')}
+      <div class="ovl"></div><div class="ovn"><div class="d" style="background:hsl(152 65% 42%);color:#fff">${ic('check', 'sm')}</div><span>结束</span></div></div>
+    ${(FLOW.globalRules || []).length ? `<div class="hs" style="margin-top:12px;height:auto;padding:8px 12px;border-radius:10px;display:block">全局约束：${FLOW.globalRules.map(fmt).join('；')}</div>` : ''}`;
+  $('#flow').innerHTML = FLOW.steps.map(stepHTML).join('');
+  $('#side').innerHTML = `<div class="gh">步骤</div>${ORDER.map(id => `<div class="it d${ALL[id].depth}" data-go="${esc(id)}"><span class="k">${esc(id)}</span><span class="t">${esc(ALL[id].title)}</span></div>`).join('')}
+    <div class="gh">结束点</div>${ends.map(([sid, n]) => `<div class="it" data-go="${esc(sid)}" title="${esc(n.text)}">${ic('flag')}<span class="t">${esc(n.text)}</span><span class="r">${esc(sid)}</span></div>`).join('')}
+    <div class="gh">回退</div>${backs.map(([sid, n]) => `<div class="it" data-go="${esc(sid)}" title="${esc(n.text || '')}">${ic('rotate-ccw')}<span class="t">${esc(sid)} → ${esc(n.to)}</span></div>`).join('') || '<div class="it muted">无</div>'}
+    <div class="gh">资源</div>${RES.map(r => `<div class="it" data-res="${esc(r.path)}">${ic(r.path.startsWith('scripts') ? 'file-code' : r.path.startsWith('assets') ? 'package' : 'file-text')}<span class="t">${esc(r.path.split('/').pop())}</span><span class="r">${esc(r.path.split('/')[0])}</span></div>`).join('') || '<div class="it muted">无</div>'}`;
+}
+
+/* ---- 文字版导出 ---- */
+function flowText(sid, f){
+  if (f.type === 'goto') return (isBack(sid, f.to) ? `回到步骤 ${f.to}` : `进入步骤 ${f.to}`) + (f.text ? `，${f.text}` : '');
+  if (f.type === 'retry') return `然后${f.text}`;
+  if (f.type === 'end') return f.text;
+  return '';
+}
+function branchLines(sid, branches, ind){
+  return branches.map(b => {
+    const parts = [], then = b.then || []; let nested = '';
+    then.forEach(x => {
+      if (x.type === 'ask' && x.branches){ parts.push(x.text); nested = '\n' + branchLines(sid, x.branches, ind + '  '); }
+      else if (FLOWS.includes(x.type)) parts.push(flowText(sid, x));
+      else parts.push(x.text);
+    });
+    return `${ind}- 如果${b.when}，${parts.join('，')}${nested ? '：' + nested : '。'}`;
+  }).join('\n');
+}
+function stepText(s){
+  const h = '#'.repeat(s.depth + 2) + ` 步骤 ${s.id}：${s.title}`;
+  if (s.children) return [h, ...s.children.map(stepText)].join('\n\n');
+  const paras = s.body.map(n => {
+    if (n.type === 'check') return `${n.text}：\n\n` + n.items.map(x => `- [ ] ${x}`).join('\n');
+    if (n.branches) return `${n.text}：\n\n` + branchLines(s.id, n.branches, '');
+    return `${n.text}。`;
+  });
+  if (s.next) paras.push(s.next.type === 'goto' ? `完成后${flowText(s.id, s.next)}。` : `${flowText(s.id, s.next)}。`);
+  if ((s.rules || []).length) paras.push('约束：\n\n' + s.rules.map(r => `- ${r}`).join('\n'));
+  return [h, ...paras].join('\n\n');
+}
+function skillText(){
+  const g = (FLOW.globalRules || []).length ? ['约束：\n\n' + FLOW.globalRules.map(r => `- ${r}`).join('\n')] : [];
+  return [`---\nname: ${FLOW.name}\ndescription: ${FLOW.description}\n---`, `# ${FLOW.name}`, FLOW.summary, ...g, '## 工作流', ...FLOW.steps.map(stepText)].join('\n\n') + '\n';
+}
+
+/* ---- 交互 ---- */
+function openRes(p){
+  const r = RES.find(x => x.path === p) || {path:p, title:'未登记的资源', purpose:''};
+  const uses = []; LEAVES.forEach(id => walk(ALL[id].body, n => { if (pathsIn(n.text).includes(p)) uses.push([id, n]); }));
+  $('#sheet').innerHTML = `<div style="display:flex;justify-content:space-between;gap:12px"><div><h4>${esc(r.title)}</h4><code>${esc(r.path)}</code></div><button class="btn icon" data-close>${ic('x')}</button></div>
+    <h5>用途</h5><div>${fmt(r.purpose)}</div><h5>在哪里用到</h5>${uses.map(([id, n]) => `<div class="it" data-go="${esc(id)}"><span class="k">${esc(id)}</span><span class="t">${esc(n.label || n.text)}</span></div>`).join('')}`;
+  icons(); $('#sheet').classList.add('on');
+}
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-close]')){ $('#sheet').classList.remove('on'); return; }
+  const r = e.target.closest('[data-res]'); if (r){ openRes(r.dataset.res); return; }
+  const g = e.target.closest('[data-go]'); if (g){ $('#sheet').classList.remove('on'); showView('flow'); const el = document.getElementById('s-' + g.dataset.go); if (el){ el.scrollIntoView({behavior:'smooth', block:'start'}); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } return; }
+  const t = e.target.closest('.tn'); if (t) t.closest('.ti').classList.toggle('open');
+});
+function showView(v){ document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.v === v)); document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id === 'v-' + v)); }
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => showView(t.dataset.v));
+$('#sw').onclick = () => { $('#sw').classList.toggle('on'); document.body.classList.toggle('full'); };
+$('#copy').onclick = () => navigator.clipboard && navigator.clipboard.writeText($('#txt').textContent);
+const THEMES = [['', 'monitor'], ['light', 'sun'], ['dark', 'moon']];
+function setTheme(t){ t ? document.documentElement.setAttribute('data-theme', t) : document.documentElement.removeAttribute('data-theme'); $('#theme').innerHTML = ic(THEMES.find(x => x[0] === t)[1]); icons(); try { localStorage.setItem('flow-theme', t); } catch (e) {} }
+$('#theme').onclick = () => { const c = document.documentElement.getAttribute('data-theme') || ''; setTheme(THEMES[(THEMES.findIndex(x => x[0] === c) + 1) % 3][0]); };
+
+render(); validate();
+$('#txt').textContent = skillText();
+let th = ''; try { th = localStorage.getItem('flow-theme') || ''; } catch (e) {}
+const q = new URLSearchParams(location.search).get('theme'); if (q === 'light' || q === 'dark') th = q;
+setTheme(th);
+if (location.hash === '#text') showView('text');
+icons();
+</script>
+</body>
+</html>
