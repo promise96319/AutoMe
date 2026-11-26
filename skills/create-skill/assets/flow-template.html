@@ -479,7 +479,6 @@ code{vertical-align:1px}
 const FLOW = {
   name: 'example-skill',
   description: '当……时使用。例如“……”、“……”等。',
-  summary: '一段话说明这个 skill 做什么、交付什么。',
   globalRules: [],
   resources: [],
   steps: [
@@ -588,7 +587,7 @@ function render(){
   document.title = `${FLOW.name} · 工作流`; $('#skillName').textContent = FLOW.name; $('#skillDesc').textContent = FLOW.description;
   let ends = [], backs = [];
   eachNode((n, sid) => { if (n.type === 'end') ends.push([sid, n]); if (n.type === 'goto' && ALL[n.to] && isBack(sid, n.to)) backs.push([sid, n]); });
-  $('#steps').innerHTML = `<div class="lane start"><div><div class="node word">开始</div></div><div class="startx"><h2>${fmt(FLOW.description)}</h2><p>${fmt(FLOW.summary)}</p></div></div>`
+  $('#steps').innerHTML = `<div class="lane start"><div><div class="node word">开始</div></div><div class="startx"><h2>${fmt(FLOW.description)}</h2></div></div>`
     + FLOW.steps.map(stepHTML).join('')
     + `<div class="lane end"><div><div class="node word">结束</div></div><div class="endx"><p>任务在交付时结束，也可能在某一步提前结束，结束的位置见各步骤中的绿色标记。</p></div></div>`;
   const dirs = {}; RES.forEach(r => { const d = r.path.includes('/') ? r.path.split('/')[0] : ''; (dirs[d] = dirs[d] || []).push(r); });
@@ -615,7 +614,7 @@ function stepText(s){ const h = '#'.repeat(s.depth + 2) + ` 步骤 ${s.id}：${s
   if ((s.rules || []).length) paras.push('约束：\n\n' + s.rules.map(r => `- ${r}`).join('\n'));
   return [h, ...paras].join('\n\n'); }
 function skillText(){ const g = (FLOW.globalRules || []).length ? ['约束：\n\n' + FLOW.globalRules.map(r => `- ${r}`).join('\n')] : [];
-  return [`---\nname: ${FLOW.name}\ndescription: ${FLOW.description}\n---`, `# ${FLOW.name}`, FLOW.summary, ...g, '## 工作流', ...FLOW.steps.map(stepText)].join('\n\n') + '\n'; }
+  return [`---\nname: ${FLOW.name}\ndescription: ${FLOW.description}\n---`, `# ${FLOW.name}`, ...g, '## 工作流', ...FLOW.steps.map(stepText)].join('\n\n') + '\n'; }
 
 /* ---- 交互 ---- */
 function showView(v){ document.querySelectorAll('.tabs .tab').forEach(t => t.classList.toggle('on', t.dataset.view === v)); document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id === 'v-' + v)); }

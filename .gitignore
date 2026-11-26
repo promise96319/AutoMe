@@ -1,0 +1,9 @@
+# 项目内安装的技能副本，源文件位于 skills/
+/.agents/skills/
+
+# macOS Finder 元数据
+.DS_Store
+
+# Python 脚本的字节码缓存
+__pycache__/
+*.py[co]

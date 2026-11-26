@@ -1,0 +1,4 @@
+interface:
+  display_name: "BUG 修复"
+  short_description: "排查程序异常，说明根因，按用户意愿确认修复方案并复测原问题"
+  default_prompt: "使用 $fix-bug 帮我排查这个问题。我想先了解原因和依据，再决定是否继续修复。"

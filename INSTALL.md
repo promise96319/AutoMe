@@ -9,6 +9,7 @@
 | Git 提交规范 | 约定提交范围、提交说明和推送时机 | [rules/git-commit.md](rules/git-commit.md) | 默认 |
 | Diff 展示规范 | 查看改动时按文件逐行对照修改前后的内容 | [rules/show-diff.md](rules/show-diff.md) | 默认 |
 | `create-skill` | 指导 AI 创建或修订 skill | [skills/create-skill/](skills/create-skill/) | 按需 |
+| `fix-bug` | 排查程序缺陷，按确认的方案修复并复测原问题 | [skills/fix-bug/](skills/fix-bug/) | 按需 |
 
 用户点名时只安装所选项。未指定 AI 时，使用当前 AI 的用户级配置。用户指定多个 AI 时，分别接入。
 
@@ -34,6 +35,6 @@
 
 已有相同引用时跳过追加，保留文件中的其他指令。核对每条选中的规范与源文件内容一致，且每个选中的指令入口都包含对应引用。
 
-**create-skill。** 将整个 `skills/create-skill/` 目录复制到所选 AI 的个人 skill 目录下，使其入口为 `<个人 skill 目录>/create-skill/SKILL.md`。核对目录中的文件与源目录一致，包括 `references/`、`assets/`、`scripts/` 和 `skill-workflow.html`。
+**按需安装的 skill。** 将选中的 `skills/<名称>/` 整个目录复制到所选 AI 的个人 skill 目录，使入口为 `<个人 skill 目录>/<名称>/SKILL.md`。核对副本与源目录中的文件一致，包括 `skill-workflow.html`。`create-skill` 还包含 `references/`、`assets/` 和 `scripts/`，`fix-bug` 还包含 `agents/openai.yaml`。
 
 再次安装时，内容一致的项跳过，已有的 AutoMe 副本就地更新。遇到来源不明的同名文件或需要保留的本地改动时，先向用户指出差异。完成后列出本次新增、更新或已是最新的项及其本地路径。

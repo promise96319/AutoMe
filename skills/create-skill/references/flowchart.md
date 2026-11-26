@@ -17,7 +17,6 @@ FLOW 的字段：
 | 字段 | 内容 |
 | --- | --- |
 | `name`、`description` | 名称和触发描述 |
-| `summary` | 一段话说明这个 skill 做什么、交付什么 |
 | `globalRules` | 全局约束，每条一句话；没有就写空数组 |
 | `resources` | 正文引用的 references、scripts、assets 文件，每项写 `path`、`title`、`purpose`；脚本另写 `input`、`output` 和 `steps`（核心处理步骤的数组），供审阅者了解脚本做什么 |
 | `steps` | 步骤数组，见下文 |
