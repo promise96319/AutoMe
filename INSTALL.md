@@ -34,6 +34,6 @@
 
 已有相同引用时跳过追加，保留文件中的其他指令。核对每条选中的规范与源文件内容一致，且每个选中的指令入口都包含对应引用。
 
-**create-skill。** 将整个 `skills/create-skill/` 目录复制到所选 AI 的个人 skill 目录下，使其入口为 `<个人 skill 目录>/create-skill/SKILL.md`。核对目录中的文件与源目录一致，包括 `references/`、`assets/` 和 `flow.html`。
+**create-skill。** 将整个 `skills/create-skill/` 目录复制到所选 AI 的个人 skill 目录下，使其入口为 `<个人 skill 目录>/create-skill/SKILL.md`。核对目录中的文件与源目录一致，包括 `references/`、`assets/`、`scripts/` 和 `skill-workflow.html`。
 
 再次安装时，内容一致的项跳过，已有的 AutoMe 副本就地更新。遇到来源不明的同名文件或需要保留的本地改动时，先向用户指出差异。完成后列出本次新增、更新或已是最新的项及其本地路径。

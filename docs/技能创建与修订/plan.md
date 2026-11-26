@@ -5,6 +5,6 @@
 | 步骤 | 工作与产出 | 开始条件 | 状态 |
 | --- | --- | --- | --- |
 | 01 设计 `create-skill` | 起草触发描述，用流程页画出从创建或修订到交付的执行流程，并由流程页导出文字版，供对照审阅。用新建、修订、异常三个场景核对去向。流程页认可后，从中提炼可复用的流程图绘制规则。产出见[触发描述与流程](steps/01-触发描述与主流程图/触发描述与主流程图.md)。 | 目标与计划已确认 | 待确认 |
-| 02 编写 `create-skill` | 按流程元素模型写出 `skills/create-skill/`：SKILL.md 只保留工作流，细则放在 `references/` 下；流程图由 `assets/flow-template.html` 加流程数据生成，create-skill 自己的 `flow.html` 已通过校验，导出的文字版就是 SKILL.md。尚未完成：按 walkthrough 实际走查；模板的视觉和功能后续再调整；剩余的 TODO 见未决问题。 | 用户要求先行编写 | 进行中（用户暂缓模板调整） |
+| 02 编写 `create-skill` | 按流程元素模型写出 `skills/create-skill/`：SKILL.md 只保留工作流；`references/` 下按职责分为需求判断、写 skill 的规则、生成流程图、写成 SKILL.md、走查五份；流程图由 `assets/flow-template.html` 加流程数据生成，引用文件的内容由 `scripts/embed-resources.py` 写入；`skill-workflow.html` 已通过校验，导出的文字版就是 SKILL.md。尚未完成：按 walkthrough 实际走查。 | 用户要求先行编写 | 进行中（待实际走查） |
 | 03 设计 `fix-bug` 的修订 | 用 `create-skill` 梳理现有修复流程，选一个具体缺陷场景，画出流程图。修订要点中区分表达调整和行为变化。 | 02 的 `create-skill` 获确认 | 未开始 |
 | 04 修订 `fix-bug` 并验收 | 按设计写入 `skills/fix-bug/SKILL.md`，用 03 的场景检验触发判断、流程走向和关键动作的依据，记录验收结果。 | 03 的流程图与修订要点获确认 | 未开始 |

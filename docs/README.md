@@ -2,4 +2,4 @@
 
 | 工作 | 当前状态 | 工作文档 |
 | --- | --- | --- |
-| 技能创建与修订（`create-skill` 首版） | 02 进行中：`skills/create-skill/` 已写出，flow.html 由模板生成并通过校验；待实际走查，模板后续再调整 | [目标](技能创建与修订/goal.md) · [计划与进度](技能创建与修订/plan.md) · [未决问题](技能创建与修订/questions.md) |
+| 技能创建与修订（`create-skill` 首版） | 02 进行中：`skills/create-skill/` 已整理为可交付版本，流程图模板定稿；待实际走查 | [目标](技能创建与修订/goal.md) · [计划与进度](技能创建与修订/plan.md) · [未决问题](技能创建与修订/questions.md) |
