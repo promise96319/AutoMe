@@ -1,6 +1,6 @@
 # AutoMe
 
-AutoMe 收集我在开发中反复用到的 AI skills 和工作规范。你可以让 Codex 或 Claude Code 帮你创建和修订 skill、排查和修复程序缺陷、按约定提交代码，或逐行审阅改动。安装到个人配置后，换一个项目也能继续用。
+AutoMe 收集我在开发中反复用到的 AI skills 和工作规范。你可以让 Codex 或 Claude Code 帮你问清方案中的关键取舍、创建和修订 skill、排查和修复程序缺陷、按约定提交代码，或逐行审阅改动。安装到个人配置后，换一个项目也能继续用。
 
 ## 1 能力一览
 
@@ -10,6 +10,7 @@ AutoMe 收集我在开发中反复用到的 AI skills 和工作规范。你可�
 | [Diff 展示规范](rules/show-diff.md) | “只看解析器的改动，给我 diff。” | 按文件展示修改前后的行号和上下文。优先使用红删绿增的原生差异视图，在聊天里用标准 `diff` 代码块对照。 | 默认 |
 | [create-skill](skills/create-skill/SKILL.md) | “把我写发布说明的做法整理成一个 skill。” | 先明确 skill 何时使用、交付什么，再生成 `skill-workflow.html` 供你审阅流程和引用文件。你确认后，AI 编写或修订 `SKILL.md`，并用实例走查。 | 按需 |
 | [fix-bug](skills/fix-bug/SKILL.md) | “查一下为什么刷新页面后草稿就丢了。” | 查明原因并说明依据。你只问原因时，AI 会询问是否继续修复。你确认具体方案后，AI 实施修复并按原场景复测。 | 按需 |
+| [grilling](skills/grilling/SKILL.md) | “我想把组内周报自动化，动手前帮我把方案问透。” | 把当前能决定的问题放在同一轮，每题给出建议。根据你的回答追问受影响的事项，最后请你确认双方理解一致。 | 按需 |
 
 ## 2 快速安装
 
@@ -19,7 +20,7 @@ AutoMe 收集我在开发中反复用到的 AI skills 和工作规范。你可�
 请按 https://github.com/promise96319/AutoMe/blob/main/INSTALL.md 安装 AutoMe。
 ```
 
-需要全部能力时，可以说“按这份说明安装默认规范、create-skill 和 fix-bug”。也可以只点名一项，例如“只安装 fix-bug”。安装位置、更新方式和核对步骤见[安装说明](INSTALL.md)。
+需要全部能力时，可以说“按这份说明安装默认规范和全部 skill”。也可以只点名一项，例如“只安装 fix-bug”。安装位置、更新方式和核对步骤见[安装说明](INSTALL.md)。
 
 ## 3 了解项目
 

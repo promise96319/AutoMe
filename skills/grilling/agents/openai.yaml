@@ -1,0 +1,4 @@
+interface:
+  display_name: "方案追问（AutoMe）"
+  short_description: "按决定之间的依赖关系分轮追问，在动手前问清关键取舍"
+  default_prompt: "用 $grilling 帮我把这个方案问透，逐轮确认关键取舍。"
